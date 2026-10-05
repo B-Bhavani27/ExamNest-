@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Result | {{ exam.exam_name }} | ExamNest</title>
+<link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+
+<!-- Bootstrap 5 -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --primary:#7C3AED;
+    --primary-dark:#5B21B6;
+    --primary-light:#EDE7FE;
+    --bg:#F5F7FB;
+    --white:#ffffff;
+    --grey:#8A8FA3;
+    --black:#1E1B2E;
+    --success:#12B76A;
+    --danger:#F04438;
+    --warning:#F79009;
+    --shadow-soft: 0 6px 20px rgba(31,26,74,0.06);
+    --shadow-hover: 0 14px 34px rgba(31,26,74,0.12);
+    --radius-lg:20px;
+    --radius-md:15px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Inter', sans-serif;
+    background:var(--bg);
+    color:var(--black);
+    overflow-x:hidden;
+  }
+  h1,h2,h3,h4,h5,.brand-font{font-family:'Sora', sans-serif;}
+  a{text-decoration:none;}
+
+  ::-webkit-scrollbar{width:9px;}
+  ::-webkit-scrollbar-thumb{background:var(--primary); border-radius:10px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+
+  .fade-up{opacity:0; transform:translateY(24px); transition:all .6s ease;}
+  .fade-up.in-view{opacity:1; transform:translateY(0);}
+
+  /* ===================== HEADER (no navbar) ===================== */
+  .instr-header{
+    position:sticky; top:0; z-index:1000;
+    background:var(--white);
+    padding:16px 0;
+    border-bottom:1px solid rgba(124,58,237,0.08);
+    transition:all .3s ease;
+  }
+  .instr-header.scrolled{box-shadow:var(--shadow-soft);}
+  .header-inner{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;}
+  .header-left{display:flex; align-items:center; gap:12px;}
+  .nav-logo-circle{
+    width:46px; height:46px; border-radius:50%;
+    border:2px solid var(--primary); padding:3px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--white); overflow:hidden; flex-shrink:0;
+  }
+  .nav-logo-circle img{width:100%; height:100%; object-fit:cover; border-radius:50%;}
+  .header-brand-text{font-weight:800; font-size:1.2rem; color:var(--primary-dark); line-height:1.1;}
+  .header-tagline{font-size:.72rem; color:var(--grey); font-weight:500;}
+  .instructions-pill{
+    display:flex; align-items:center; gap:12px;
+    padding:12px 22px; border-radius:50px;
+    background:var(--primary-light); color:var(--primary-dark);
+    font-weight:700; font-size:1rem;
+  }
+  .instructions-pill i{font-size:1.4rem;}
+
+  section, .instr-section{padding:26px 0;}
+  .section-heading{font-weight:800; font-size:1.35rem; margin-bottom:20px; display:flex; align-items:center; gap:12px;}
+  .section-heading .icon-badge{
+    width:40px; height:40px; border-radius:12px;
+    background:var(--primary-light); color:var(--primary-dark);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1rem; flex-shrink:0;
+  }
+
+  .dash-card{
+    background:var(--white);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-soft);
+    border:none;
+    transition:all .35s ease;
+  }
+  .dash-card:hover{box-shadow:var(--shadow-hover);}
+
+  /* ===================== STUDENT / EXAM DETAIL CARDS ===================== */
+  .info-card{padding:28px;}
+  .student-photo-circle{
+    width:78px; height:78px;
+    border-radius:50%;
+    object-fit:cover;
+    border:3px solid var(--primary-light);
+    flex-shrink:0;
+  }
+  .student-photo-placeholder{
+    width:78px; height:78px;
+    border-radius:50%;
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.6rem;
+    flex-shrink:0;
+  }
+  .info-list{list-style:none; padding:0; margin:0;}
+  .info-list li{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 0;
+    border-bottom:1px dashed rgba(124,58,237,0.12);
+    font-size:.88rem;
+  }
+  .info-list li:last-child{border-bottom:none;}
+  .info-list li span.label{color:var(--grey); font-weight:600;}
+  .info-list li span.value{font-weight:700; text-align:right;}
+
+  .detail-tile{
+    display:flex; align-items:center; gap:12px;
+    padding:16px; border-radius:var(--radius-md);
+    background:var(--bg); height:100%;
+  }
+  .detail-tile .tile-icon{
+    width:40px; height:40px; border-radius:10px;
+    background:var(--white); color:var(--primary);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1rem; flex-shrink:0; box-shadow:var(--shadow-soft);
+  }
+  .detail-tile .tile-label{font-size:.72rem; color:var(--grey); text-transform:uppercase; letter-spacing:.3px; font-weight:700;}
+  .detail-tile .tile-value{font-weight:800; font-size:.98rem;}
+
+  /* ===================== RESULT HERO ===================== */
+  .result-hero{padding:44px 30px; text-align:center;}
+  .result-badge-circle{
+    width:110px; height:110px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 20px;
+    font-size:2.6rem;
+    color:var(--white);
+  }
+  .result-badge-circle.pass{background:linear-gradient(135deg, #12B76A, #0E9C5B); box-shadow:0 14px 30px rgba(18,183,106,0.3);}
+  .result-badge-circle.fail{background:linear-gradient(135deg, #F04438, #B42318); box-shadow:0 14px 30px rgba(240,68,56,0.3);}
+  .result-hero h1{font-weight:800; font-size:1.9rem; margin-bottom:6px;}
+  .result-hero p{color:var(--grey); font-size:.95rem; margin-bottom:0;}
+  .result-quote{
+    margin-top:16px; padding:14px 22px; border-radius:14px;
+    display:inline-block; font-weight:700; font-size:.9rem; font-style:italic;
+  }
+  .result-quote.pass-quote{background:#E7F8EF; color:#0E9C5B;}
+  .result-quote.fail-quote{background:#FEF3E7; color:#B45309;}
+  .result-score-row{
+    display:flex; align-items:center; justify-content:center; gap:40px;
+    margin-top:26px; flex-wrap:wrap;
+  }
+  .result-score-item{text-align:center;}
+  .result-score-item .val{font-weight:800; font-size:1.7rem; color:var(--primary-dark);}
+  .result-score-item .lbl{font-size:.78rem; color:var(--grey); font-weight:700; text-transform:uppercase; letter-spacing:.4px;}
+
+  /* ===================== TIMING ROW ===================== */
+  .timing-row{display:flex; flex-wrap:wrap; gap:16px;}
+  .timing-item{
+    flex:1; min-width:180px;
+    display:flex; align-items:center; gap:14px;
+    padding:18px 20px; border-radius:var(--radius-md);
+    background:var(--bg);
+  }
+  .timing-item .t-icon{
+    width:42px; height:42px; border-radius:12px;
+    background:var(--white); color:var(--primary);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.05rem; flex-shrink:0; box-shadow:var(--shadow-soft);
+  }
+  .timing-item .t-label{font-size:.72rem; color:var(--grey); text-transform:uppercase; font-weight:700; letter-spacing:.3px;}
+  .timing-item .t-value{font-weight:800; font-size:.98rem;}
+
+  /* ===================== STAT GRID ===================== */
+  .stat-card{padding:22px 16px; text-align:center;}
+  .stat-icon{
+    width:50px; height:50px; border-radius:14px;
+    background:var(--primary-light); color:var(--primary-dark);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.2rem; margin:0 auto 10px;
+  }
+  .stat-icon.warn{background:#FEF3E7; color:var(--warning);}
+  .stat-icon.viol{background:#FDEDEB; color:var(--danger);}
+  .stat-icon.ok{background:#E7F8EF; color:var(--success);}
+  .stat-number{font-weight:800; font-size:1.5rem;}
+  .stat-label{color:var(--grey); font-size:.78rem; font-weight:600;}
+
+  /* ===================== ANSWER REVIEW ===================== */
+  .review-card{padding:0; overflow:hidden;}
+  .review-item{
+    padding:22px 26px;
+    border-bottom:1px solid rgba(124,58,237,0.08);
+  }
+  .review-item:last-child{border-bottom:none;}
+  .review-item-header{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; margin-bottom:12px; flex-wrap:wrap;
+  }
+  .review-q-number{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--bg); color:var(--primary-dark);
+    padding:5px 14px; border-radius:50px;
+    font-weight:800; font-size:.8rem;
+  }
+  .review-status-badge{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:5px 14px; border-radius:50px;
+    font-weight:700; font-size:.78rem;
+  }
+  .review-status-badge.correct{background:#E7F8EF; color:var(--success);}
+  .review-status-badge.wrong{background:#FDEDEB; color:var(--danger);}
+  .review-status-badge.unanswered{background:#F0F1F5; color:var(--grey);}
+  .review-question-text{font-weight:700; font-size:.96rem; margin-bottom:14px; line-height:1.55;}
+  .review-options{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .review-option{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 14px; border-radius:10px;
+    font-size:.85rem; font-weight:600;
+    border:1.5px solid rgba(124,58,237,0.12);
+    background:var(--bg);
+  }
+  .review-option .opt-key{
+    width:24px; height:24px; border-radius:6px;
+    background:var(--white); border:1.5px solid rgba(16,11,26,0.15);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:.72rem; flex-shrink:0;
+  }
+  .review-option.is-correct-answer{border-color:var(--success); background:#E7F8EF;}
+  .review-option.is-correct-answer .opt-key{background:var(--success); color:var(--white); border-color:var(--success);}
+  .review-option.is-wrong-selected{border-color:var(--danger); background:#FDEDEB;}
+  .review-option.is-wrong-selected .opt-key{background:var(--danger); color:var(--white); border-color:var(--danger);}
+
+  @media (max-width:600px){
+    .review-options{grid-template-columns:1fr;}
+  }
+
+  /* ===================== AI LOG CARD ===================== */
+  .ai-log-card{padding:26px;}
+  .ai-log-list{list-style:none; padding:0; margin:0;}
+  .ai-log-list li{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px; padding:10px 0;
+    border-bottom:1px dashed rgba(124,58,237,0.12);
+    font-size:.85rem; font-weight:600;
+  }
+  .ai-log-list li:last-child{border-bottom:none;}
+  .ai-log-list li .log-time{color:var(--grey); font-weight:700; font-size:.78rem;}
+
+  /* ===================== ACTION BUTTONS ===================== */
+  .btn-primary-solid{
+    background:var(--primary); color:var(--white); border:none;
+    padding:12px 30px; border-radius:50px; font-weight:700; font-size:.92rem;
+    transition:all .3s ease; box-shadow:0 6px 16px rgba(124,58,237,0.28);
+  }
+  .btn-primary-solid:hover{background:var(--primary-dark); color:var(--white); transform:translateY(-2px);}
+  .btn-outline-soft{
+    border:1.5px solid rgba(124,58,237,0.25); color:var(--primary-dark); background:var(--white);
+    padding:12px 28px; border-radius:50px; font-weight:700; font-size:.92rem; transition:all .3s ease;
+  }
+  .btn-outline-soft:hover{background:var(--primary); color:var(--white); border-color:transparent;}
+  .confirm-card{padding:26px 30px;}
+
+  /* ===================== FOOTER ===================== */
+  .site-footer{background:var(--black); color:rgba(255,255,255,0.75); padding:60px 0 0; margin-top:40px;}
+  .site-footer h6{color:var(--white); font-weight:700; margin-bottom:16px;}
+  .site-footer a{color:rgba(255,255,255,0.65); transition:.3s;}
+  .site-footer a:hover{color:var(--primary); padding-left:4px;}
+  .footer-links li{margin-bottom:9px;}
+  .social-icon{
+    width:38px; height:38px; border-radius:50%;
+    background:rgba(255,255,255,0.08);
+    display:inline-flex; align-items:center; justify-content:center;
+    margin-right:8px; transition:.3s; color:var(--white) !important;
+  }
+  .social-icon:hover{background:var(--primary); transform:translateY(-3px);}
+  .footer-bottom{border-top:1px solid rgba(255,255,255,0.08); margin-top:40px; padding:18px 0; text-align:center; font-size:.82rem;}
+
+  @media (max-width:767px){
+    .header-inner{justify-content:center; text-align:center;}
+    .instructions-pill{width:100%; justify-content:center;}
+    .section-heading{font-size:1.15rem;}
+    .result-score-row{gap:22px;}
+    .confirm-card{padding:20px;}
+    .form-actions-row{flex-direction:column-reverse; gap:14px;}
+    .form-actions-row .btn{width:100%; text-align:center;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<header class="instr-header" id="instrHeader">
+  <div class="container">
+    <div class="header-inner">
+      <div class="header-left">
+        <div class="nav-logo-circle"><img src="{% static 'images/logo.png' %}" alt="ExamNest Logo"></div>
+        <div>
+          <div class="header-brand-text">ExamNest</div>
+          <div class="header-tagline">Your Exam. Your Effort. Your Achievement.</div>
+        </div>
+      </div>
+      <div class="instructions-pill">
+        <i class="fa-solid fa-chart-simple"></i> Exam Result
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ===================== STUDENT + EXAM DETAILS ===================== -->
+  <div class="instr-section">
+    <div class="row g-4">
+      <div class="col-md-6 fade-up">
+        <div class="dash-card info-card h-100">
+          <h6 class="fw-bold mb-3"><i class="fa-solid fa-user me-2" style="color:var(--primary);"></i>Student Details</h6>
+          <div class="d-flex align-items-center gap-3 mb-3">
+            {% if student.photo %}
+              <img src="{{ student.photo.url }}" alt="{{ student.full_name }}" class="student-photo-circle">
+            {% else %}
+              <div class="student-photo-placeholder"><i class="fa-solid fa-user"></i></div>
+            {% endif %}
+            <div>
+              <div class="fw-bold" style="font-size:1.05rem;">{{ student.full_name }}</div>
+              <div class="text-secondary small">{{ student.student_id }}</div>
+            </div>
+          </div>
+          <ul class="info-list">
+            <li><span class="label">Student ID</span><span class="value">{{ student.student_id }}</span></li>
+            <li><span class="label">Email</span><span class="value">{{ student.email }}</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col-md-6 fade-up">
+        <div class="dash-card info-card h-100">
+          <h6 class="fw-bold mb-3"><i class="fa-solid fa-file-signature me-2" style="color:var(--primary);"></i>Exam Details</h6>
+          <div class="row g-2">
+            <div class="col-6">
+              <div class="detail-tile">
+                <div class="tile-icon"><i class="fa-solid fa-file-pen"></i></div>
+                <div><div class="tile-label">Exam Name</div><div class="tile-value">{{ exam.exam_name }}</div></div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="detail-tile">
+                <div class="tile-icon"><i class="fa-solid fa-list-check"></i></div>
+                <div><div class="tile-label">Questions</div><div class="tile-value">{{ exam.total_questions }}</div></div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="detail-tile">
+                <div class="tile-icon"><i class="fa-solid fa-star"></i></div>
+                <div><div class="tile-label">Total Marks</div><div class="tile-value">{{ exam.total_marks }}</div></div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="detail-tile">
+                <div class="tile-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                <div><div class="tile-label">Duration</div><div class="tile-value">{{ exam.duration }} Min</div></div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="detail-tile">
+                <div class="tile-icon"><i class="fa-solid fa-square-check"></i></div>
+                <div><div class="tile-label">Pass Marks</div><div class="tile-value">{{ exam.pass_marks }}</div></div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="detail-tile">
+                <div class="tile-icon"><i class="fa-solid fa-rotate"></i></div>
+                <div><div class="tile-label">Attempt</div><div class="tile-value">{{ attempt.attempt_number }} of {{ exam.max_attempts }}</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== RESULT HERO ===================== -->
+  <div class="instr-section">
+    <div class="dash-card result-hero fade-up">
+      <div class="result-badge-circle {% if attempt.passed %}pass{% else %}fail{% endif %}">
+        {% if attempt.passed %}
+          <i class="fa-solid fa-trophy"></i>
+        {% else %}
+          <i class="fa-solid fa-circle-xmark"></i>
+        {% endif %}
+      </div>
+      <h1>{% if attempt.passed %}Congratulations, You Passed!{% else %}Exam Not Cleared{% endif %}</h1>
+      <p>
+        {% if attempt.passed %}
+          Thank you for attending the exam, {{ student.full_name }}. Your hard work paid off.
+        {% else %}
+          Thank you for attending the exam, {{ student.full_name }}.
+        {% endif %}
+      </p>
+
+      <div class="result-quote {% if attempt.passed %}pass-quote{% else %}fail-quote{% endif %}">
+        {% if attempt.passed %}
+          "Success is the sum of small efforts, repeated day in and day out."
+        {% else %}
+          "Better luck next time — every attempt makes you stronger. Don't give up!"
+        {% endif %}
+      </div>
+
+      <div class="result-score-row">
+        <div class="result-score-item">
+          <div class="val">{{ attempt.score }}/{{ exam.total_marks }}</div>
+          <div class="lbl">Score</div>
+        </div>
+        <div class="result-score-item">
+          <div class="val">{{ attempt.percentage }}%</div>
+          <div class="lbl">Percentage</div>
+        </div>
+        <div class="result-score-item">
+          <div class="val">{{ exam.pass_marks }}</div>
+          <div class="lbl">Pass Marks</div>
+        </div>
+        <div class="result-score-item">
+          <div class="val">
+            {% if attempt.passed %}<span style="color:var(--success);">PASS</span>{% else %}<span style="color:var(--danger);">FAIL</span>{% endif %}
+          </div>
+          <div class="lbl">Result</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== TIMING ===================== -->
+  <div class="instr-section">
+    <h5 class="section-heading fade-up"><span class="icon-badge"><i class="fa-solid fa-clock"></i></span>Exam Timing</h5>
+    <div class="dash-card p-4 fade-up">
+      <div class="timing-row">
+        <div class="timing-item">
+          <div class="t-icon"><i class="fa-solid fa-play"></i></div>
+          <div>
+            <div class="t-label">Started At</div>
+            <div class="t-value">{{ attempt.started_at|date:"d M Y, h:i A" }}</div>
+          </div>
+        </div>
+        <div class="timing-item">
+          <div class="t-icon"><i class="fa-solid fa-flag-checkered"></i></div>
+          <div>
+            <div class="t-label">Ended At</div>
+            <div class="t-value">{{ attempt.submitted_at|date:"d M Y, h:i A"|default:"—" }}</div>
+          </div>
+        </div>
+        <div class="timing-item">
+          <div class="t-icon"><i class="fa-solid fa-stopwatch"></i></div>
+          <div>
+            <div class="t-label">Time Taken</div>
+            <div class="t-value">{{ time_taken|default:"—" }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== STATISTICS ===================== -->
+  <div class="instr-section">
+    <h5 class="section-heading fade-up"><span class="icon-badge"><i class="fa-solid fa-chart-simple"></i></span>Performance Summary</h5>
+    <div class="row g-3 g-md-4">
+      <div class="col-6 col-md-4 col-lg fade-up">
+        <div class="dash-card stat-card">
+          <div class="stat-icon ok"><i class="fa-solid fa-pen"></i></div>
+          <div class="stat-number">{{ answered_count }}</div>
+          <div class="stat-label">Answered</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg fade-up">
+        <div class="dash-card stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-circle-question"></i></div>
+          <div class="stat-number">{{ unanswered_count }}</div>
+          <div class="stat-label">Not Answered</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg fade-up">
+        <div class="dash-card stat-card">
+          <div class="stat-icon ok"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="stat-number">{{ correct_count }}</div>
+          <div class="stat-label">Correct Answers</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg fade-up">
+        <div class="dash-card stat-card">
+          <div class="stat-icon viol"><i class="fa-solid fa-circle-xmark"></i></div>
+          <div class="stat-number">{{ wrong_count }}</div>
+          <div class="stat-label">Wrong Answers</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg fade-up">
+        <div class="dash-card stat-card">
+          <div class="stat-icon warn"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div class="stat-number">{{ attempt.warnings }}</div>
+          <div class="stat-label">AI Warnings</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg fade-up">
+        <div class="dash-card stat-card">
+          <div class="stat-icon viol"><i class="fa-solid fa-shield-halved"></i></div>
+          <div class="stat-number">{{ attempt.violations }}</div>
+          <div class="stat-label">AI Violations</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg fade-up">
+        <div class="dash-card stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-percent"></i></div>
+          <div class="stat-number">{{ attempt.percentage }}%</div>
+          <div class="stat-label">Percentage Score</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== AI PROCTORING LOG ===================== -->
+  {% if attempt.warning_logs or attempt.violation_logs %}
+  <div class="instr-section">
+    <h5 class="section-heading fade-up"><span class="icon-badge"><i class="fa-solid fa-robot"></i></span>AI Proctoring Log</h5>
+    <div class="row g-4">
+      <div class="col-md-6 fade-up">
+        <div class="dash-card ai-log-card h-100">
+          <h6 class="fw-bold mb-3" style="color:var(--warning);"><i class="fa-solid fa-circle-exclamation me-2"></i>Warnings</h6>
+          <ul class="ai-log-list">
+            {% for log in attempt.warning_logs %}
+            <li><span>{{ log.event }}</span><span class="log-time">{{ log.time }}</span></li>
+            {% empty %}
+            <li class="text-secondary">No warnings recorded.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-6 fade-up">
+        <div class="dash-card ai-log-card h-100">
+          <h6 class="fw-bold mb-3" style="color:var(--danger);"><i class="fa-solid fa-ban me-2"></i>Violations</h6>
+          <ul class="ai-log-list">
+            {% for log in attempt.violation_logs %}
+            <li><span>{{ log.event }}</span><span class="log-time">{{ log.time }}</span></li>
+            {% empty %}
+            <li class="text-secondary">No violations recorded.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ===================== ANSWER REVIEW ===================== -->
+  <div class="instr-section">
+    <h5 class="section-heading fade-up"><span class="icon-badge"><i class="fa-solid fa-list-check"></i></span>Answer Review</h5>
+    <div class="dash-card review-card fade-up">
+      {% for answer in answers %}
+      <div class="review-item">
+        <div class="review-item-header">
+          <span class="review-q-number">Question {{ forloop.counter }}</span>
+          {% if answer.is_correct %}
+            <span class="review-status-badge correct"><i class="fa-solid fa-check"></i> Correct</span>
+          {% else %}
+            <span class="review-status-badge wrong"><i class="fa-solid fa-xmark"></i> Wrong</span>
+          {% endif %}
+        </div>
+        <p class="review-question-text">{{ answer.question.question }}</p>
+        <div class="review-options">
+          <div class="review-option
+              {% if answer.question.correct_answer == 'A' %}is-correct-answer{% elif answer.selected_answer == 'A' %}is-wrong-selected{% endif %}">
+            <span class="opt-key">A</span><span>{{ answer.question.option_a }}</span>
+          </div>
+          <div class="review-option
+              {% if answer.question.correct_answer == 'B' %}is-correct-answer{% elif answer.selected_answer == 'B' %}is-wrong-selected{% endif %}">
+            <span class="opt-key">B</span><span>{{ answer.question.option_b }}</span>
+          </div>
+          <div class="review-option
+              {% if answer.question.correct_answer == 'C' %}is-correct-answer{% elif answer.selected_answer == 'C' %}is-wrong-selected{% endif %}">
+            <span class="opt-key">C</span><span>{{ answer.question.option_c }}</span>
+          </div>
+          <div class="review-option
+              {% if answer.question.correct_answer == 'D' %}is-correct-answer{% elif answer.selected_answer == 'D' %}is-wrong-selected{% endif %}">
+            <span class="opt-key">D</span><span>{{ answer.question.option_d }}</span>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center text-secondary py-5">No answers were recorded for this attempt.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ===================== ACTION BUTTONS ===================== -->
+  <div class="instr-section">
+    <div class="dash-card confirm-card fade-up">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 form-actions-row">
+        <a href="{% url 'student_dashboard' %}" class="btn btn-outline-soft">
+          <i class="fa-solid fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+        {% if not attempt.passed and attempt.attempt_number < exam.max_attempts %}
+        <a href="{% url 'student_dashboard' %}#exams" class="btn btn-primary-solid">
+          Retry Exam <i class="fa-solid fa-rotate-right ms-2"></i>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="nav-logo-circle" style="border-color:#b9a6ff; width:52px; height:52px;">
+            <img src="{% static 'images/logo.png' %}" alt="ExamNest Logo">
+          </div>
+          <div class="fw-bold text-white fs-5">ExamNest</div>
+        </div>
+        <p class="small mb-3">Your Exam. Your Effort. Your Achievement.</p>
+        <div>
+          <a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="social-icon"><i class="fa-brands fa-whatsapp"></i></a>
+          <a href="#" class="social-icon"><i class="fa-brands fa-github"></i></a>
+          <a href="mailto:support@examnest.com" class="social-icon"><i class="fa-solid fa-envelope"></i></a>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <h6>Quick Links</h6>
+        <ul class="list-unstyled footer-links">
+          <li><a href="#">About</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Terms &amp; Conditions</a></li>
+        </ul>
+        <h6 class="mt-4">Legal</h6>
+        <ul class="list-unstyled footer-links">
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Refund Policy</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-4">
+        <h6>Contact Us</h6>
+        <ul class="list-unstyled footer-links">
+          <li><i class="fa-solid fa-location-dot me-2"></i> ExamNest HQ, India</li>
+          <li><i class="fa-solid fa-envelope me-2"></i> support@examnest.com</li>
+          <li><i class="fa-solid fa-phone me-2"></i> +91 XXXXX XXXXX</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ExamNest. All Rights Reserved.</div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const header = document.getElementById('instrHeader');
+  window.addEventListener('scroll', function () {
+    header.classList.toggle('scrolled', window.scrollY > 10);
+  });
+
+  const faders = document.querySelectorAll('.fade-up');
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  faders.forEach(function (el) { observer.observe(el); });
+});
+</script>
+</body>
+</html>

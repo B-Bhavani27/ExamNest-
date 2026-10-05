@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Dashboard | ExamNest</title>
+<link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+<!-- Bootstrap 5 -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --primary:#7C3AED;
+    --primary-dark:#5B21B6;
+    --primary-light:#EDE7FE;
+    --bg:#F5F7FB;
+    --white:#ffffff;
+    --grey:#8A8FA3;
+    --black:#1E1B2E;
+    --success:#12B76A;
+    --danger:#F04438;
+    --warning:#F79009;
+    --shadow-soft: 0 6px 20px rgba(31,26,74,0.06);
+    --shadow-hover: 0 14px 34px rgba(31,26,74,0.12);
+    --radius-lg:20px;
+    --radius-md:15px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Inter', sans-serif;
+    background:var(--bg);
+    color:var(--black);
+    overflow-x:hidden;
+  }
+  h1,h2,h3,h4,h5,.brand-font{font-family:'Sora', sans-serif;}
+  a{text-decoration:none;}
+
+  ::-webkit-scrollbar{width:9px;}
+  ::-webkit-scrollbar-thumb{background:var(--primary); border-radius:10px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+
+  .fade-up{opacity:0; transform:translateY(24px); transition:all .6s ease;}
+  .fade-up.in-view{opacity:1; transform:translateY(0);}
+
+  /* ===== NAVBAR ===== */
+  .dash-navbar{
+    position:sticky;
+    top:0;
+    z-index:1000;
+    background:var(--white);
+    padding:14px 0;
+    border-bottom:1px solid rgba(124,58,237,0.08);
+    transition:all .3s ease;
+  }
+  .dash-navbar.scrolled{box-shadow:var(--shadow-soft);}
+  .nav-inner{display:flex; align-items:center; justify-content:space-between;}
+  .nav-left{display:flex; align-items:center; gap:14px;}
+  .hamburger-btn{
+    width:42px; height:42px;
+    border-radius:12px;
+    border:1.5px solid rgba(124,58,237,0.15);
+    background:var(--white);
+    color:var(--primary);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.1rem;
+    cursor:pointer;
+    transition:all .3s ease;
+  }
+  .hamburger-btn:hover{background:var(--primary); color:var(--white);}
+  .nav-logo-circle{
+    width:38px; height:38px;
+    border-radius:50%;
+    border:2px solid var(--primary);
+    padding:3px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--white);
+    overflow:hidden;
+  }
+  .nav-logo-circle img{width:100%; height:100%; object-fit:cover; border-radius:50%;}
+  .nav-brand-text{font-weight:800; font-size:1.15rem; color:var(--primary-dark);}
+  .nav-right{display:flex; align-items:center; gap:10px;}
+  .nav-icon-btn{
+    width:42px; height:42px;
+    border-radius:12px;
+    border:1.5px solid rgba(124,58,237,0.15);
+    background:var(--white);
+    color:var(--primary-dark);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1rem;
+    transition:all .3s ease;
+    position:relative;
+  }
+  .nav-icon-btn:hover{background:var(--primary); color:var(--white); transform:translateY(-2px);}
+  .nav-icon-btn .badge-dot{
+    position:absolute; top:-4px; right:-4px;
+    width:10px; height:10px;
+    border-radius:50%;
+    background:var(--danger);
+    border:2px solid var(--white);
+  }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar-overlay{
+    position:fixed; inset:0;
+    background:rgba(30,27,46,0.45);
+    z-index:1050;
+    opacity:0; visibility:hidden;
+    transition:all .35s ease;
+  }
+  .sidebar-overlay.show{opacity:1; visibility:visible;}
+  .sidebar{
+    position:fixed;
+    top:0; left:-300px;
+    width:280px; height:100%;
+    background:var(--white);
+    z-index:1100;
+    padding:26px 22px;
+    transition:left .4s cubic-bezier(.77,0,.18,1);
+    box-shadow:8px 0 30px rgba(31,26,74,0.15);
+    overflow-y:auto;
+  }
+  .sidebar.open{left:0;}
+  .sidebar .close-btn{
+    width:36px; height:36px;
+    border-radius:50%;
+    border:none;
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    display:flex; align-items:center; justify-content:center;
+    margin-left:auto;
+    cursor:pointer;
+    transition:.3s;
+  }
+  .sidebar .close-btn:hover{background:var(--primary); color:var(--white); transform:rotate(90deg);}
+  .sidebar-profile{text-align:center; margin:14px 0 20px;}
+  .sidebar-profile img{
+    width:78px; height:78px;
+    border-radius:50%;
+    object-fit:cover;
+    border:3px solid var(--primary-light);
+    margin-bottom:12px;
+  }
+  .sidebar-profile h6{font-weight:700; margin-bottom:2px;}
+  .sidebar-profile span{color:var(--grey); font-size:.82rem;}
+  .sidebar hr{border-color:rgba(124,58,237,0.1); margin:18px 0;}
+  .sidebar ul{list-style:none; padding:0; margin:0;}
+  .sidebar ul li a{
+    display:flex; align-items:center; gap:12px;
+    padding:12px 14px;
+    border-radius:12px;
+    color:var(--black);
+    font-weight:600;
+    font-size:.92rem;
+    transition:all .25s ease;
+    margin-bottom:4px;
+  }
+  .sidebar ul li a i{width:20px; color:var(--primary);}
+  .sidebar ul li a:hover{background:var(--primary-light); color:var(--primary-dark); padding-left:18px;}
+  .sidebar ul li a.logout-link{color:var(--danger);}
+  .sidebar ul li a.logout-link i{color:var(--danger);}
+
+  section, .dash-section{padding:26px 0;}
+  .section-heading{font-weight:800; font-size:1.4rem; margin-bottom:20px;}
+
+  /* ===== CARD BASE ===== */
+  .dash-card{
+    background:var(--white);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-soft);
+    border:none;
+    transition:all .35s ease;
+  }
+  .dash-card:hover{box-shadow:var(--shadow-hover);}
+
+  /* ===== PROFILE CARD ===== */
+  .profile-card{padding:30px;}
+  .profile-photo{
+    width:84px; height:84px;
+    border-radius:50%;
+    object-fit:cover;
+    border:3px solid var(--primary-light);
+  }
+  .profile-welcome{color:var(--grey); font-size:.85rem; margin-bottom:2px;}
+  .profile-name{font-weight:800; font-size:1.25rem; margin-bottom:4px;}
+  .profile-meta{color:var(--grey); font-size:.85rem;}
+  .profile-meta i{color:var(--primary); margin-right:5px;}
+  .progress{height:9px; border-radius:20px; background:var(--primary-light);}
+  .progress-bar{background:var(--primary); border-radius:20px;}
+  .btn-primary-soft{
+    border:1.5px solid var(--primary);
+    color:var(--primary-dark);
+    background:var(--white);
+    padding:9px 22px;
+    border-radius:50px;
+    font-weight:600;
+    font-size:.88rem;
+    transition:all .3s ease;
+  }
+  .btn-primary-soft:hover{background:var(--primary); color:var(--white);}
+  .btn-primary-solid{
+    background:var(--primary);
+    color:var(--white);
+    border:none;
+    padding:10px 24px;
+    border-radius:50px;
+    font-weight:600;
+    font-size:.88rem;
+    transition:all .3s ease;
+    box-shadow:0 6px 16px rgba(124,58,237,0.28);
+  }
+  .btn-primary-solid:hover{background:var(--primary-dark); color:var(--white); transform:translateY(-2px);}
+
+  .profile-expand{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .5s ease;
+  }
+  .profile-expand.open{max-height:600px;}
+  .expand-inner{
+    border-top:1px solid rgba(124,58,237,0.1);
+    margin-top:24px;
+    padding-top:22px;
+  }
+  .detail-item{margin-bottom:16px;}
+  .detail-label{font-size:.75rem; color:var(--grey); text-transform:uppercase; letter-spacing:.5px; font-weight:700;}
+  .detail-value{font-weight:600; font-size:.95rem;}
+
+  /* ===== ANNOUNCEMENTS ===== */
+  .announcement-card{padding:26px 30px;}
+  .announcement-card ul{list-style:none; padding:0; margin:0;}
+  .announcement-card ul li{
+    display:flex; gap:12px; align-items:flex-start;
+    padding:10px 0;
+    border-bottom:1px dashed rgba(124,58,237,0.12);
+    font-size:.92rem;
+  }
+  .announcement-card ul li:last-child{border-bottom:none;}
+  .announcement-card ul li i{color:var(--primary); margin-top:3px;}
+
+  /* ===== STATS ===== */
+  .stat-card{
+    padding:24px 18px;
+    text-align:center;
+  }
+  .stat-icon{
+    width:52px; height:52px;
+    border-radius:14px;
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.3rem;
+    margin:0 auto 12px;
+  }
+  .stat-number{font-weight:800; font-size:1.7rem;}
+  .stat-label{color:var(--grey); font-size:.8rem; font-weight:600;}
+
+  /* ===== EXAM CARDS ===== */
+  .exam-card{padding:26px;}
+  .exam-icon-badge{
+    width:52px; height:52px;
+    border-radius:14px;
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.3rem;
+    transition:all .3s ease;
+  }
+  .exam-card:hover .exam-icon-badge{background:var(--primary); color:var(--white); transform:scale(1.06);}
+  .exam-card h5{font-weight:700; margin-bottom:6px;}
+  .exam-card .exam-desc{color:var(--grey); font-size:.85rem; margin-bottom:14px; min-height:38px;}
+  .exam-meta-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px 16px;
+    margin-bottom:16px;
+    font-size:.82rem;
+  }
+  .exam-meta-grid span{color:var(--grey);}
+  .exam-meta-grid strong{display:block; color:var(--black); font-size:.88rem;}
+  .status-badge{
+    display:inline-block;
+    padding:4px 12px;
+    border-radius:50px;
+    font-size:.72rem;
+    font-weight:700;
+    letter-spacing:.3px;
+  }
+  .status-available{background:#E7F8EF; color:var(--success);}
+  .status-completed{background:var(--primary-light); color:var(--primary-dark);}
+  .status-failed{background:#FDEDEB; color:var(--danger);}
+  .status-exhausted{background:#FEF3E7; color:var(--warning);}
+  .status-disabled{background:#F0F1F5; color:var(--grey);}
+
+  /* ===== RESULTS TABLE ===== */
+  .results-card{padding:0; overflow:hidden;}
+  table.results-table thead{background:var(--primary-light);}
+  table.results-table thead th{
+    border:none; font-weight:700; padding:15px; font-size:.8rem;
+    color:var(--primary-dark); text-transform:uppercase; letter-spacing:.4px;
+  }
+  table.results-table tbody td{padding:15px; vertical-align:middle; font-size:.88rem; border-color:rgba(124,58,237,0.08);}
+  table.results-table tbody tr.result-row{cursor:pointer; transition:background .2s ease;}
+  table.results-table tbody tr.result-row:hover{background:var(--bg);}
+  .expand-caret{transition:transform .25s ease; color:var(--grey); font-size:.75rem;}
+  tr.result-row.expanded .expand-caret{transform:rotate(180deg); color:var(--primary);}
+
+  .result-expand-inner{
+    background:var(--bg);
+    padding:22px 26px;
+    border-top:1px dashed rgba(124,58,237,0.15);
+    border-bottom:1px solid rgba(124,58,237,0.08);
+  }
+  .expand-heading{font-weight:800; font-size:.85rem; margin-bottom:12px;}
+  .expand-heading.warn-heading{color:var(--warning);}
+  .expand-heading.viol-heading{color:var(--danger);}
+  .expand-log-list{list-style:none; padding:0; margin:0;}
+  .expand-log-list li{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px; padding:8px 0;
+    border-bottom:1px dashed rgba(124,58,237,0.1);
+    font-size:.82rem; font-weight:600;
+  }
+  .expand-log-list li:last-child{border-bottom:none;}
+  .expand-log-list li .log-time{color:var(--grey); font-weight:700; font-size:.75rem; flex-shrink:0;}
+
+  /* ===== AI NOTIFICATIONS ===== */
+  .notif-card{padding:10px 0;}
+  .notif-item{
+    display:flex; gap:14px; align-items:flex-start;
+    padding:16px 26px;
+    border-bottom:1px solid rgba(124,58,237,0.08);
+  }
+  .notif-item:last-child{border-bottom:none;}
+  .notif-icon{
+    width:40px; height:40px;
+    border-radius:12px;
+    background:#FDEDEB;
+    color:var(--danger);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1rem;
+    flex-shrink:0;
+  }
+  .notif-icon.warning-type{background:#FEF3E7; color:var(--warning);}
+  .notif-title{font-weight:700; font-size:.9rem;}
+  .notif-time{color:var(--grey); font-size:.78rem;}
+
+  /* ===== FOOTER ===== */
+  .site-footer{background:var(--black); color:rgba(255,255,255,0.75); padding:60px 0 0; margin-top:40px;}
+  .site-footer h6{color:var(--white); font-weight:700; margin-bottom:16px;}
+  .site-footer a{color:rgba(255,255,255,0.65); transition:.3s;}
+  .site-footer a:hover{color:var(--primary); padding-left:4px;}
+  .footer-links li{margin-bottom:9px;}
+  .social-icon{
+    width:38px; height:38px; border-radius:50%;
+    background:rgba(255,255,255,0.08);
+    display:inline-flex; align-items:center; justify-content:center;
+    margin-right:8px; transition:.3s; color:var(--white) !important;
+  }
+  .social-icon:hover{background:var(--primary); transform:translateY(-3px);}
+  .footer-bottom{border-top:1px solid rgba(255,255,255,0.08); margin-top:40px; padding:18px 0; text-align:center; font-size:.82rem;}
+
+  @media (max-width:767px){
+    .nav-brand-text{display:none;}
+    .profile-card{padding:22px;}
+    .exam-meta-grid{grid-template-columns:1fr 1fr;}
+    .section-heading{font-size:1.2rem;}
+    table.results-table{font-size:.78rem;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="dash-navbar" id="dashNavbar">
+  <div class="container">
+    <div class="nav-inner">
+      <div class="nav-left">
+        <button class="hamburger-btn" id="sidebarToggleBtn" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+        <div class="nav-logo-circle"><img src="{% static 'images/logo.png' %}" alt="ExamNest Logo"></div>
+        <span class="nav-brand-text">ExamNest</span>
+      </div>
+      <div class="nav-right">
+        <a href="#results" class="nav-icon-btn" title="Results"><i class="fa-solid fa-chart-simple"></i></a>
+        <a href="#" class="nav-icon-btn" id="profileNavIcon" title="Profile"><i class="fa-solid fa-user"></i></a>
+        <a href="{% url 'logout' %}" class="nav-icon-btn" title="Logout"><i class="fa-solid fa-right-from-bracket"></i></a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== SIDEBAR ===== -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<aside class="sidebar" id="sidebar">
+  <button class="close-btn" id="sidebarCloseBtn" aria-label="Close menu"><i class="fa-solid fa-xmark"></i></button>
+  <div class="sidebar-profile">
+    <img src="{{ student.photo.url }}" alt="{{ student.full_name }}">
+    <h6>{{ student.full_name }}</h6>
+    <span>ID: {{ student.student_id }}</span>
+  </div>
+  <hr>
+  <ul>
+    <li><a href="#" id="sidebarProfileLink"><i class="fa-solid fa-user"></i> Profile</a></li>
+    <li><a href="#exams"><i class="fa-solid fa-file-pen"></i> Exams</a></li>
+    <li><a href="#results"><i class="fa-solid fa-chart-simple"></i> Results</a></li>
+    <li><a href="#"><i class="fa-solid fa-envelope"></i> Contact</a></li>
+    <li><a href="#"><i class="fa-solid fa-file-contract"></i> Terms &amp; Conditions</a></li>
+    <li><a href="{% url 'logout' %}" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+  </ul>
+</aside>
+
+<div class="container">
+
+  <!-- ===== PROFILE CARD ===== -->
+  <div class="dash-section" id="profile">
+    <div class="dash-card profile-card fade-up">
+      <div class="row align-items-center g-4">
+        <div class="col-auto">
+          <img src="{{ student.photo.url }}" alt="{{ student.full_name }}" class="profile-photo">
+        </div>
+        <div class="col">
+          <div class="profile-welcome">Welcome back,</div>
+          <div class="profile-name">{{ student.full_name }}</div>
+          <div class="profile-meta">
+            <span class="me-3"><i class="fa-solid fa-id-badge"></i>{{ student.student_id }}</span>
+            <span><i class="fa-solid fa-envelope"></i>{{ student.email }}</span>
+          </div>
+        </div>
+        <div class="col-12 col-md-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="detail-label">Exam Progress</span>
+            <span class="fw-bold" style="color:var(--primary-dark);">
+              {% if progress_completed %}Completed{% else %}{{ progress_percentage }}%{% endif %}
+            </span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width:{{ progress_percentage }}%; {% if progress_completed %}background:var(--success);{% endif %}" aria-valuenow="{{ progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-primary-soft" id="viewProfileBtn">
+            View Profile <i class="fa-solid fa-chevron-down ms-1" id="viewProfileChevron"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- EXPANDED PROFILE -->
+      <div class="profile-expand" id="profileExpand">
+        <div class="expand-inner">
+          <div class="row g-4">
+            <div class="col-6 col-md-3">
+              <div class="detail-item">
+                <div class="detail-label">College Name</div>
+                <div class="detail-value">{{ student.college_name }}</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="detail-item">
+                <div class="detail-label">Department</div>
+                <div class="detail-value">{{ student.department }}</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="detail-item">
+                <div class="detail-label">Study Level</div>
+                <div class="detail-value">{{ student.study_level }}</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="detail-item">
+                <div class="detail-label">Degree</div>
+                <div class="detail-value">{{ student.degree }}</div>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="detail-item mb-0">
+                <div class="detail-label">Address</div>
+                <div class="detail-value">
+                  {{ student.house_no }}, {{ student.street }}<br>
+                  {{ student.city }}, {{ student.district }}<br>
+                  {{ student.state }} - {{ student.pincode }}<br>
+                  {{ student.country }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ANNOUNCEMENTS ===== -->
+  <div class="dash-section">
+    <div class="dash-card announcement-card fade-up">
+      <h5 class="section-heading mb-3">📢 Announcements</h5>
+      <ul>
+        {% for announcement in announcements %}
+        <li><i class="fa-solid fa-circle-exclamation"></i> {{ announcement.text }}</li>
+        {% empty %}
+        <li><i class="fa-solid fa-camera"></i> Camera permission is mandatory.</li>
+        <li><i class="fa-solid fa-microphone"></i> Microphone permission is mandatory.</li>
+        <li><i class="fa-solid fa-window-restore"></i> Do not switch browser tabs.</li>
+        <li><i class="fa-solid fa-rotate"></i> Only two attempts are allowed for each exam.</li>
+        <li><i class="fa-solid fa-triangle-exclamation"></i> More than 5 AI violations will automatically terminate the examination.</li>
+        <li><i class="fa-solid fa-user-check"></i> Only the registered student can attend the exam.</li>
+        <li><i class="fa-solid fa-ban"></i> Phones, books and unauthorized materials are prohibited.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== STATISTICS ===== -->
+  <div class="dash-section">
+    <div class="row g-3 g-md-4">
+      <div class="col-6 col-md-4 col-lg fade-up">
+        <div class="dash-card stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-file-pen"></i></div>
+          <div class="stat-number">{{ stats.available_exams }}</div>
+          <div class="stat-label">Available Exams</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg fade-up">
+        <div class="dash-card stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="stat-number">{{ stats.completed_exams }}</div>
+          <div class="stat-label">Completed Exams</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg fade-up">
+        <div class="dash-card stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="stat-number">{{ stats.average_score }}%</div>
+          <div class="stat-label">Average Score</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg fade-up">
+        <div class="dash-card stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div class="stat-number">{{ stats.ai_warnings }}</div>
+          <div class="stat-label">AI Warnings</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg fade-up">
+        <div class="dash-card stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-shield-halved"></i></div>
+          <div class="stat-number">{{ stats.violations }}</div>
+          <div class="stat-label">Violations</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== AVAILABLE EXAMS ===== -->
+<div class="dash-section" id="exams">
+  <h5 class="section-heading">Available Exams</h5>
+
+  <div class="row g-4">
+
+      {% for exam in exams %}
+
+      <div class="col-md-6 col-lg-4 fade-up">
+          <div class="dash-card exam-card h-100 d-flex flex-column">
+
+              <div class="exam-icon-badge mb-3">
+                  <i class="fa-solid fa-{{ exam.icon|default:'file-pen' }}"></i>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h5 class="mb-0">{{ exam.exam_name }}</h5>
+              </div>
+
+              <p class="exam-desc">{{ exam.description }}</p>
+
+              <div class="exam-meta-grid">
+                  <span><strong>{{ exam.duration }}</strong><br>Duration</span>
+                  <span><strong>{{ exam.total_questions }}</strong><br>Questions</span>
+                  <span><strong>{{ exam.total_marks }}</strong><br>Marks</span>
+                  <span><strong>{{ exam.attempts_left }}</strong><br>Attempts Left</span>
+              </div>
+
+              <div class="mt-auto">
+                  {% if exam.exam_status == 'completed' %}
+                    <span class="btn btn-primary-solid w-100" style="background:var(--success); box-shadow:none; opacity:1; pointer-events:none;">
+                        <i class="fa-solid fa-circle-check me-1"></i> Completed
+                    </span>
+                  {% elif exam.exam_status == 'unavailable' %}
+                    <span class="btn btn-primary-solid w-100" style="background:var(--grey); box-shadow:none; opacity:.65; pointer-events:none;">
+                        <i class="fa-solid fa-ban me-1"></i> Unavailable
+                    </span>
+                  {% else %}
+                    <a href="{% url 'exam_instructions' exam.id %}" class="btn btn-primary-solid w-100">
+                        Attend Exam
+                        <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                  {% endif %}
+              </div>
+
+          </div>
+      </div>
+
+      {% empty %}
+
+      <div class="col-12">
+          <div class="dash-card p-5 text-center">
+              No exams available.
+          </div>
+      </div>
+
+      {% endfor %}
+
+  </div>
+</div>
+
+  <!-- ===== RESULT SUMMARY ===== -->
+  <div class="dash-section" id="results">
+    <h5 class="section-heading">Result Summary</h5>
+    <p class="text-secondary small mb-3">Click on any exam row to view its individual AI warnings and violations.</p>
+    <div class="dash-card results-card fade-up">
+      <div class="table-responsive">
+        <table class="table results-table mb-0 align-middle text-center">
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th class="text-start">Exam Name</th>
+              <th>Warnings</th>
+              <th>Violations</th>
+              <th>Attempts Used</th>
+              <th>Score</th>
+              <th>Pass / Fail</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for result in results %}
+            <tr class="result-row" data-target="resultExpand{{ forloop.counter }}">
+              <td>{{ forloop.counter }}</td>
+              <td class="fw-semibold text-start">
+                {{ result.exam_name }}
+                <i class="fa-solid fa-chevron-down expand-caret ms-1"></i>
+              </td>
+              <td>{{ result.warnings }}</td>
+              <td>{{ result.violations }}</td>
+              <td>{{ result.attempts_used }}</td>
+              <td class="fw-bold" style="color:var(--primary-dark);">{{ result.score }}</td>
+              <td>
+                {% if result.is_pass %}
+                  <span class="status-badge status-available">Pass</span>
+                {% else %}
+                  <span class="status-badge status-failed">Fail</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if result.status == 'completed' %}
+                  <span class="status-badge status-completed">Completed</span>
+                {% elif result.status == 'incomplete' %}
+                  <span class="status-badge status-exhausted">Incomplete</span>
+                {% else %}
+                  <span class="status-badge status-disabled">Unavailable</span>
+                {% endif %}
+              </td>
+              <td>{{ result.date|date:"d M Y" }}</td>
+            </tr>
+            <tr class="result-expand-row d-none" id="resultExpand{{ forloop.counter }}">
+              <td colspan="9" class="p-0">
+                <div class="result-expand-inner">
+                  <div class="row g-4">
+                    <div class="col-md-6">
+                      <h6 class="expand-heading warn-heading"><i class="fa-solid fa-triangle-exclamation me-2"></i>Warnings ({{ result.warnings }})</h6>
+                      <ul class="expand-log-list">
+                        {% for log in result.warning_logs %}
+                        <li><span>{{ log.event }}</span><span class="log-time">{{ log.time }}</span></li>
+                        {% empty %}
+                        <li class="text-secondary">No warnings recorded for this exam.</li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                    <div class="col-md-6">
+                      <h6 class="expand-heading viol-heading"><i class="fa-solid fa-ban me-2"></i>Violations ({{ result.violations }})</h6>
+                      <ul class="expand-log-list">
+                        {% for log in result.violation_logs %}
+                        <li><span>{{ log.event }}</span><span class="log-time">{{ log.time }}</span></li>
+                        {% empty %}
+                        <li class="text-secondary">No violations recorded for this exam.</li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="9" class="text-secondary py-4">No results to display yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== AI WARNINGS & VIOLATIONS ===== -->
+  <div class="dash-section" id="notifications">
+    <h5 class="section-heading">AI Warnings &amp; Violations</h5>
+    <div class="row g-4">
+      <div class="col-md-6 fade-up">
+        <div class="dash-card notif-card h-100">
+          <div class="px-4 pt-3 pb-1">
+            <h6 class="fw-bold mb-0" style="color:var(--danger);"><i class="fa-solid fa-ban me-2"></i>AI Violations</h6>
+          </div>
+          {% for notification in violation_notifications %}
+          <div class="notif-item">
+            <div class="notif-icon">
+              <i class="fa-solid fa-{{ notification.icon|default:'ban' }}"></i>
+            </div>
+            <div>
+              <div class="notif-title">{{ notification.message }}</div>
+              <div class="notif-time">{{ notification.exam_name }} &middot; {{ notification.date|date:"d M Y" }} {{ notification.timestamp }}</div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="text-center text-secondary py-4">No AI violations recorded.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="col-md-6 fade-up">
+        <div class="dash-card notif-card h-100">
+          <div class="px-4 pt-3 pb-1">
+            <h6 class="fw-bold mb-0" style="color:var(--warning);"><i class="fa-solid fa-triangle-exclamation me-2"></i>AI Warnings</h6>
+          </div>
+          {% for notification in warning_notifications %}
+          <div class="notif-item">
+            <div class="notif-icon warning-type">
+              <i class="fa-solid fa-{{ notification.icon|default:'triangle-exclamation' }}"></i>
+            </div>
+            <div>
+              <div class="notif-title">{{ notification.message }}</div>
+              <div class="notif-time">{{ notification.exam_name }} &middot; {{ notification.date|date:"d M Y" }} {{ notification.timestamp }}</div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="text-center text-secondary py-4">No AI warnings recorded.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="nav-logo-circle" style="border-color:#b9a6ff; width:52px; height:52px;">
+            <img src="{% static 'images/logo.png' %}" alt="ExamNest Logo">
+          </div>
+          <div class="fw-bold text-white fs-5">ExamNest</div>
+        </div>
+        <p class="small mb-3">Your Exam. Your Effort. Your Achievement.</p>
+        <div>
+          <a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="social-icon"><i class="fa-brands fa-whatsapp"></i></a>
+          <a href="#" class="social-icon"><i class="fa-brands fa-github"></i></a>
+          <a href="mailto:support@examnest.com" class="social-icon"><i class="fa-solid fa-envelope"></i></a>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <h6>Quick Links</h6>
+        <ul class="list-unstyled footer-links">
+          <li><a href="#">About</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Terms &amp; Conditions</a></li>
+        </ul>
+        <h6 class="mt-4">Legal</h6>
+        <ul class="list-unstyled footer-links">
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Refund Policy</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-4">
+        <h6>Contact Us</h6>
+        <ul class="list-unstyled footer-links">
+          <li><i class="fa-solid fa-location-dot me-2"></i> ExamNest HQ, India</li>
+          <li><i class="fa-solid fa-envelope me-2"></i> support@examnest.com</li>
+          <li><i class="fa-solid fa-phone me-2"></i> +91 XXXXX XXXXX</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ExamNest. All Rights Reserved.</div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  /* ---- Navbar shadow on scroll ---- */
+  const navbar = document.getElementById('dashNavbar');
+  window.addEventListener('scroll', function () {
+    navbar.classList.toggle('scrolled', window.scrollY > 10);
+  });
+
+  /* ---- Sidebar open/close ---- */
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const openBtn = document.getElementById('sidebarToggleBtn');
+  const closeBtn = document.getElementById('sidebarCloseBtn');
+
+  function openSidebar(){ sidebar.classList.add('open'); overlay.classList.add('show'); }
+  function closeSidebar(){ sidebar.classList.remove('open'); overlay.classList.remove('show'); }
+
+  openBtn.addEventListener('click', openSidebar);
+  closeBtn.addEventListener('click', closeSidebar);
+  overlay.addEventListener('click', closeSidebar);
+
+  document.addEventListener('click', function (e) {
+    if (sidebar.classList.contains('open') &&
+        !sidebar.contains(e.target) &&
+        !openBtn.contains(e.target)) {
+      closeSidebar();
+    }
+  });
+
+  /* ---- Profile expand/collapse ---- */
+  const profileExpand = document.getElementById('profileExpand');
+  const viewProfileBtn = document.getElementById('viewProfileBtn');
+  const chevron = document.getElementById('viewProfileChevron');
+
+  function toggleProfile() {
+    profileExpand.classList.toggle('open');
+    chevron.classList.toggle('fa-chevron-down');
+    chevron.classList.toggle('fa-chevron-up');
+    if (profileExpand.classList.contains('open')) {
+      viewProfileBtn.firstChild.textContent = 'Hide Profile ';
+    } else {
+      viewProfileBtn.firstChild.textContent = 'View Profile ';
+    }
+  }
+  viewProfileBtn.addEventListener('click', toggleProfile);
+
+  document.getElementById('profileNavIcon').addEventListener('click', function (e) {
+    e.preventDefault();
+    document.getElementById('profile').scrollIntoView({ behavior: 'smooth' });
+    if (!profileExpand.classList.contains('open')) toggleProfile();
+  });
+  document.getElementById('sidebarProfileLink').addEventListener('click', function (e) {
+    e.preventDefault();
+    closeSidebar();
+    setTimeout(function () {
+      document.getElementById('profile').scrollIntoView({ behavior: 'smooth' });
+      if (!profileExpand.classList.contains('open')) toggleProfile();
+    }, 300);
+  });
+
+  /* ---- Fade-up scroll reveal ---- */
+  const faders = document.querySelectorAll('.fade-up');
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  faders.forEach(function (el) { observer.observe(el); });
+
+  /* ---- Result row expand/collapse (inline AI warnings/violations) ---- */
+  document.querySelectorAll('tr.result-row').forEach(function (row) {
+    row.addEventListener('click', function () {
+      const targetId = this.dataset.target;
+      const expandRow = document.getElementById(targetId);
+      if (!expandRow) return;
+
+      const isOpen = !expandRow.classList.contains('d-none');
+
+      // Close any other open row first
+      document.querySelectorAll('tr.result-expand-row').forEach(function (r) {
+        r.classList.add('d-none');
+      });
+      document.querySelectorAll('tr.result-row').forEach(function (r) {
+        r.classList.remove('expanded');
+      });
+
+      if (!isOpen) {
+        expandRow.classList.remove('d-none');
+        this.classList.add('expanded');
+      }
+    });
+  });
+
+});
+</script>
+</body>
+</html>

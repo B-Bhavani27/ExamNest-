@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Student Registration | ExamNest</title>
+<link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<style>
+
+:root{
+    --primary:#8B5CF6;
+    --light:#EDE9FE;
+    --bg:#F8F7FF;
+    --white:#FFFFFF;
+    --black:#171123;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:var(--bg);
+    font-family:'Segoe UI',sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+
+.main-container{
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:30px 15px;
+}
+
+.wrapper{
+    width:100%;
+    max-width:700px;
+}
+
+.page-header{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:15px;
+    margin-bottom:25px;
+}
+
+.logo-circle{
+    width:90px;
+    height:90px;
+    min-width:90px;
+    border-radius:50%;
+    overflow:hidden;
+    border:4px solid var(--primary);
+    background:white;
+    box-shadow:0 8px 20px rgba(139,92,246,.25);
+}
+
+.logo-circle img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.header-text{
+    text-align:left;
+}
+
+.header-text h2{
+    margin:0;
+    color:var(--primary);
+    font-weight:700;
+}
+
+.header-text p{
+    margin:0;
+    color:#666;
+    font-size:14px;
+}
+
+.register-card{
+    background:white;
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+.register-card h4{
+    text-align:center;
+    color:var(--primary);
+    margin-bottom:25px;
+}
+
+.form-control{
+    border-radius:12px;
+    padding:12px;
+}
+
+.form-control:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 10px rgba(139,92,246,.25);
+}
+
+.btn-register{
+    width:100%;
+    border:none;
+    border-radius:12px;
+    padding:12px;
+    background:var(--primary);
+    color:white;
+    font-weight:600;
+}
+
+.btn-register:hover{
+    background:#7443F1;
+}
+
+.note{
+    font-size:13px;
+    color:#666;
+    margin-top:5px;
+}
+
+.login-link{
+    text-align:center;
+    margin-top:20px;
+}
+
+.login-link a{
+    color:var(--primary);
+    text-decoration:none;
+    font-weight:600;
+}
+
+/* ===================== PHOTO CAPTURE SECTION ===================== */
+.photo-mode-toggle{
+    display:flex;
+    gap:10px;
+    margin-bottom:14px;
+}
+
+.photo-mode-btn{
+    flex:1;
+    border:1.5px solid var(--primary);
+    background:var(--white);
+    color:var(--primary);
+    padding:10px;
+    border-radius:12px;
+    font-weight:600;
+    font-size:.88rem;
+    transition:all .25s ease;
+}
+
+.photo-mode-btn.active{
+    background:var(--primary);
+    color:var(--white);
+}
+
+.photo-section-block{
+    border:1.5px dashed rgba(139,92,246,.35);
+    border-radius:14px;
+    padding:16px;
+    margin-bottom:10px;
+}
+
+.camera-preview-box{
+    width:100%;
+    max-width:320px;
+    aspect-ratio:4/3;
+    margin:0 auto 12px;
+    border-radius:12px;
+    background:var(--black);
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.camera-preview-box video{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:none;
+}
+
+.camera-btn-row{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+
+.btn-camera-action{
+    border:none;
+    border-radius:12px;
+    padding:10px 20px;
+    font-weight:600;
+    font-size:.85rem;
+    background:var(--primary);
+    color:var(--white);
+}
+
+.btn-camera-action.secondary{
+    background:var(--light);
+    color:var(--primary);
+}
+
+.photo-preview-wrap{
+    text-align:center;
+    margin-top:14px;
+}
+
+.photo-preview-wrap img{
+    max-width:160px;
+    max-height:160px;
+    border-radius:12px;
+    border:3px solid var(--primary);
+    object-fit:cover;
+    display:none;
+}
+
+.preview-label{
+    font-size:.78rem;
+    color:#666;
+    font-weight:600;
+    margin-top:6px;
+}
+
+/* ===================== FOOTER (same as index.html) ===================== */
+.site-footer{
+    background:var(--black);
+    color:rgba(255,255,255,0.75);
+    padding:60px 0 0;
+    margin-top:0;
+}
+.site-footer h6{
+    color:#fff;
+    font-weight:700;
+    margin-bottom:16px;
+}
+.site-footer a{
+    color:rgba(255,255,255,0.65);
+    transition:.3s;
+    text-decoration:none;
+}
+.site-footer a:hover{color:#b9a6ff; padding-left:4px;}
+.footer-links li{margin-bottom:9px;}
+.footer-logo-circle{
+    width:52px; height:52px;
+    border-radius:50%;
+    border:2px solid #b9a6ff;
+    padding:3px;
+    display:flex; align-items:center; justify-content:center;
+    background:#fff;
+    overflow:hidden;
+}
+.footer-logo-circle img{width:100%; height:100%; object-fit:cover; border-radius:50%;}
+.social-icon{
+    width:38px; height:38px; border-radius:50%;
+    background:rgba(255,255,255,0.08);
+    display:inline-flex; align-items:center; justify-content:center;
+    margin-right:8px; transition:.3s; color:#fff !important;
+}
+.social-icon:hover{background:linear-gradient(135deg,#6c3ce0,#b9a6ff); transform:translateY(-3px);}
+.footer-bottom{
+    border-top:1px solid rgba(255,255,255,0.08);
+    margin-top:40px;
+    padding:18px 0;
+    text-align:center;
+    font-size:.82rem;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="main-container">
+
+<div class="wrapper">
+
+<div class="page-header">
+
+<div class="logo-circle">
+<img src="{% static 'images/logo.png' %}" alt="ExamNest Logo">
+</div>
+
+<div class="header-text">
+<h2>ExamNest</h2>
+<p>Your Exam. Your Effort. Your Achievement.</p>
+</div>
+
+</div>
+
+<div class="register-card">
+
+<h4>Student Registration</h4>
+
+<form method="POST" enctype="multipart/form-data" id="registerForm">
+
+{% csrf_token %}
+
+<div class="mb-3">
+<label class="form-label">Full Name</label>
+<input type="text" class="form-control" name="full_name" placeholder="Enter Full Name" required>
+</div>
+
+<div class="mb-3">
+<label class="form-label">Email Address</label>
+<input type="email" class="form-control" name="email" placeholder="Enter Email Address" required>
+</div>
+
+<div class="mb-3">
+<label class="form-label">Date of Birth</label>
+<input type="date" class="form-control" name="dob" required>
+</div>
+
+<div class="mb-3">
+<label class="form-label">College Name</label>
+<input type="text" class="form-control" name="college_name" placeholder="Enter College Name" required>
+</div>
+
+<div class="mb-3">
+<label class="form-label">Study Level</label>
+<select class="form-control" name="study_level" required>
+<option value="">Select Study Level</option>
+<option>UG</option>
+<option>PG</option>
+<option>PhD</option>
+</select>
+</div>
+
+<div class="mb-3">
+<label class="form-label">Degree</label>
+<input type="text" class="form-control" name="degree" placeholder="Enter Degree" required>
+</div>
+
+<div class="mb-3">
+<label class="form-label">Department</label>
+<input type="text" class="form-control" name="department" placeholder="Enter Department" required>
+</div>
+
+<hr>
+
+<h5 class="mb-3 text-secondary">Address Details</h5>
+
+<div class="mb-3">
+<label class="form-label">House No</label>
+<input type="text" class="form-control" name="house_no" placeholder="Enter House Number" required>
+</div>
+
+<div class="mb-3">
+<label class="form-label">Street / Area</label>
+<input type="text" class="form-control" name="street_area" placeholder="Enter Street / Area" required>
+</div>
+
+<div class="mb-3">
+<label class="form-label">City</label>
+<input type="text" class="form-control" name="city" placeholder="Enter City" required>
+</div>
+
+<div class="mb-3">
+<label class="form-label">District</label>
+<input type="text" class="form-control" name="district" placeholder="Enter District" required>
+</div>
+
+<div class="mb-3">
+<label class="form-label">State</label>
+<input type="text" class="form-control" name="state" placeholder="Enter State" required>
+</div>
+
+<div class="mb-3">
+<label class="form-label">Pincode</label>
+<input type="text" class="form-control" name="pincode" placeholder="Enter Pincode" required>
+</div>
+
+<div class="mb-3">
+<label class="form-label">Country</label>
+<input type="text" class="form-control" name="country" placeholder="Enter Country" required>
+</div>
+
+<div class="mb-3">
+<label class="form-label">Photo</label>
+
+<div class="photo-mode-toggle">
+<button type="button" class="photo-mode-btn active" id="uploadModeBtn">
+<i class="fa-solid fa-upload me-1"></i> Upload Photo
+</button>
+<button type="button" class="photo-mode-btn" id="cameraModeBtn">
+<i class="fa-solid fa-camera me-1"></i> Take Live Photo
+</button>
+</div>
+
+<!-- UPLOAD MODE -->
+<div id="uploadSection" class="photo-section-block">
+<input type="file" class="form-control" id="photoInput" name="photo" accept=".jpg,.jpeg,.png" required>
+
+<div class="note">
+    Photo Requirements:
+    <br>
+    • Passport-size photograph
+    <br>
+    • JPG, JPEG or PNG format only
+    <br>
+    • Maximum file size: 2 MB
+    <br>
+    • Face must be clearly visible
+    <br>
+    • No group photos or edited images
+</div>
+</div>
+
+<!-- CAMERA MODE -->
+<div id="cameraSection" class="photo-section-block" style="display:none;">
+
+<div class="camera-preview-box">
+<video id="cameraVideo" autoplay playsinline muted></video>
+</div>
+
+<div class="camera-btn-row">
+<button type="button" class="btn-camera-action" id="startCameraBtn">
+<i class="fa-solid fa-video me-1"></i> Start Camera
+</button>
+<button type="button" class="btn-camera-action" id="captureBtn" style="display:none;">
+<i class="fa-solid fa-camera me-1"></i> Capture Photo
+</button>
+<button type="button" class="btn-camera-action secondary" id="retakeBtn" style="display:none;">
+<i class="fa-solid fa-rotate-left me-1"></i> Retake
+</button>
+</div>
+
+<canvas id="captureCanvas" style="display:none;"></canvas>
+
+<div class="note text-center mt-2">Look straight at the camera in good lighting before capturing.</div>
+</div>
+
+<!-- SHARED PREVIEW (works for either mode) -->
+<div class="photo-preview-wrap">
+<img id="photoPreview" alt="Photo preview">
+<div class="preview-label" id="previewLabel" style="display:none;">Preview</div>
+</div>
+
+</div>
+
+<div class="row">
+<div class="col-6">
+<button type="reset" class="btn btn-secondary w-100" id="clearFormBtn">
+Clear
+</button>
+</div>
+
+<div class="col-6">
+<button type="submit" class="btn btn-register">
+Register
+</button>
+</div>
+</div>
+
+<div class="login-link">
+Already have an account?
+<a href="{% url 'student_login' %}">Login</a>
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ===== FOOTER (same as index.html) ===== -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="footer-logo-circle">
+            <img src="{% static 'images/logo.png' %}" alt="ExamNest Logo">
+          </div>
+          <div>
+            <div style="color:#fff; font-weight:800; font-size:1.2rem;">ExamNest</div>
+          </div>
+        </div>
+        <p class="small mb-3">Your Exam. Your Effort. Your Achievement.</p>
+        <div>
+          <a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="social-icon"><i class="fa-brands fa-whatsapp"></i></a>
+          <a href="#" class="social-icon"><i class="fa-brands fa-github"></i></a>
+          <a href="mailto:support@examnest.com" class="social-icon"><i class="fa-solid fa-envelope"></i></a>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <h6>Quick Links</h6>
+        <ul class="list-unstyled footer-links">
+          <li><a href="{% url 'index' %}#about">About</a></li>
+          <li><a href="{% url 'index' %}#contact">Contact</a></li>
+          <li><a href="{% url 'index' %}#terms">Terms &amp; Conditions</a></li>
+        </ul>
+        <h6 class="mt-4">Legal</h6>
+        <ul class="list-unstyled footer-links">
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Refund Policy</a></li>
+        </ul>
+      </div>
+
+      <div class="col-lg-4">
+        <h6>Contact Details</h6>
+        <ul class="list-unstyled footer-links">
+          <li><i class="fa-solid fa-location-dot me-2"></i> ExamNest HQ, India</li>
+          <li><i class="fa-solid fa-envelope me-2"></i> support@examnest.com</li>
+          <li><i class="fa-solid fa-phone me-2"></i> +91 XXXXX XXXXX</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      &copy; 2026 ExamNest. All Rights Reserved.
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  const uploadModeBtn = document.getElementById('uploadModeBtn');
+  const cameraModeBtn = document.getElementById('cameraModeBtn');
+  const uploadSection = document.getElementById('uploadSection');
+  const cameraSection = document.getElementById('cameraSection');
+
+  const photoInput = document.getElementById('photoInput');
+  const video = document.getElementById('cameraVideo');
+  const captureCanvas = document.getElementById('captureCanvas');
+  const startCameraBtn = document.getElementById('startCameraBtn');
+  const captureBtn = document.getElementById('captureBtn');
+  const retakeBtn = document.getElementById('retakeBtn');
+
+  const photoPreview = document.getElementById('photoPreview');
+  const previewLabel = document.getElementById('previewLabel');
+
+  let cameraStream = null;
+
+  function stopCamera() {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(function (t) { t.stop(); });
+      cameraStream = null;
+    }
+    video.style.display = 'none';
+  }
+
+  function showPreview(url) {
+    photoPreview.src = url;
+    photoPreview.style.display = 'inline-block';
+    previewLabel.style.display = 'block';
+  }
+
+  /* ---- Mode switching ---- */
+  uploadModeBtn.addEventListener('click', function () {
+    uploadModeBtn.classList.add('active');
+    cameraModeBtn.classList.remove('active');
+    uploadSection.style.display = 'block';
+    cameraSection.style.display = 'none';
+    stopCamera();
+  });
+
+  cameraModeBtn.addEventListener('click', function () {
+    cameraModeBtn.classList.add('active');
+    uploadModeBtn.classList.remove('active');
+    uploadSection.style.display = 'none';
+    cameraSection.style.display = 'block';
+  });
+
+  /* ---- Upload mode preview ---- */
+  photoInput.addEventListener('change', function () {
+    if (this.files && this.files[0]) {
+      showPreview(URL.createObjectURL(this.files[0]));
+    }
+  });
+
+  /* ---- Start camera ---- */
+  startCameraBtn.addEventListener('click', function () {
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(function (stream) {
+        cameraStream = stream;
+        video.srcObject = stream;
+        video.style.display = 'block';
+        startCameraBtn.style.display = 'none';
+        captureBtn.style.display = 'inline-block';
+      })
+      .catch(function () {
+        alert('Unable to access camera. Please allow camera permission and try again.');
+      });
+  });
+
+  /* ---- Capture photo -> attach to the same file input Django reads ---- */
+  captureBtn.addEventListener('click', function () {
+
+    captureCanvas.width = video.videoWidth;
+    captureCanvas.height = video.videoHeight;
+    captureCanvas.getContext('2d').drawImage(video, 0, 0, captureCanvas.width, captureCanvas.height);
+
+    captureCanvas.toBlob(function (blob) {
+
+      const file = new File([blob], 'live_photo.jpg', { type: 'image/jpeg' });
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      photoInput.files = dataTransfer.files;
+
+      showPreview(URL.createObjectURL(blob));
+
+      stopCamera();
+      captureBtn.style.display = 'none';
+      retakeBtn.style.display = 'inline-block';
+
+    }, 'image/jpeg', 0.9);
+  });
+
+  /* ---- Retake ---- */
+  retakeBtn.addEventListener('click', function () {
+    photoInput.value = '';
+    photoPreview.style.display = 'none';
+    previewLabel.style.display = 'none';
+    retakeBtn.style.display = 'none';
+    startCameraBtn.style.display = 'inline-block';
+  });
+
+  /* ---- Reset form also resets photo state ---- */
+  document.getElementById('clearFormBtn').addEventListener('click', function () {
+    stopCamera();
+    photoPreview.style.display = 'none';
+    previewLabel.style.display = 'none';
+    startCameraBtn.style.display = 'inline-block';
+    captureBtn.style.display = 'none';
+    retakeBtn.style.display = 'none';
+    uploadModeBtn.click();
+  });
+
+  window.addEventListener('beforeunload', stopCamera);
+
+});
+</script>
+
+</body>
+</html>

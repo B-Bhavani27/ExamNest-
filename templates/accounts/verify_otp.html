@@ -1,0 +1,359 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+<title>Verify OTP | ExamNest</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<style>
+
+:root{
+    --primary:#8B5CF6;
+    --primary-dark:#7443F1;
+    --bg:#F8F7FF;
+}
+
+body{
+    background:var(--bg);
+    font-family:'Segoe UI',sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+
+.main-container{
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:30px 15px;
+}
+
+.wrapper{
+    width:100%;
+    max-width:600px;
+}
+
+.page-header{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:15px;
+    margin-bottom:25px;
+}
+
+.logo-circle{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    overflow:hidden;
+    border:4px solid var(--primary);
+    background:white;
+    box-shadow:0 8px 20px rgba(139,92,246,.25);
+}
+
+.logo-circle img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.header-text h2{
+    margin:0;
+    color:var(--primary);
+    font-weight:700;
+}
+
+.header-text p{
+    margin:0;
+    color:#666;
+}
+
+.card-box{
+    background:white;
+    border-radius:20px;
+    padding:35px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+.card-box h4{
+    color:var(--primary);
+    text-align:center;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+.info{
+    text-align:center;
+    color:#666;
+    margin-bottom:25px;
+}
+
+.student-box{
+    background:#EDE9FE;
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:25px;
+    text-align:center;
+}
+
+.student-box strong{
+    color:var(--primary);
+}
+
+.otp-container{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:25px;
+}
+
+.otp-box{
+    width:55px;
+    height:55px;
+    text-align:center;
+    font-size:24px;
+    border-radius:12px;
+    border:2px solid #ddd;
+}
+
+.otp-box:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 10px rgba(139,92,246,.25);
+    outline:none;
+}
+
+.btn-verify{
+    width:100%;
+    border:none;
+    border-radius:12px;
+    padding:12px;
+    background:var(--primary);
+    color:white;
+    font-weight:600;
+}
+
+.btn-verify:hover{
+    background:var(--primary-dark);
+}
+
+.timer{
+    text-align:center;
+    margin-top:20px;
+    color:#666;
+}
+
+.resend{
+    text-align:center;
+    margin-top:10px;
+}
+
+.resend a{
+    color:var(--primary);
+    text-decoration:none;
+    font-weight:600;
+    pointer-events:none;
+    opacity:.5;
+}
+
+footer{
+    text-align:center;
+    padding:15px;
+    color:#666;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="main-container">
+
+<div class="wrapper">
+
+<div class="page-header">
+
+<div class="logo-circle">
+<img src="{% static 'images/logo.png' %}" alt="Logo">
+</div>
+
+<div class="header-text">
+<h2>ExamNest</h2>
+<p>Your Exam. Your Effort. Your Achievement.</p>
+</div>
+
+</div>
+
+<div class="card-box">
+
+<h4>Verify OTP</h4>
+
+<p class="info">
+Enter the 6-digit OTP sent to your registered email.
+</p> 
+
+<div class="student-box">
+
+<strong>Student ID:</strong>
+
+{{ student.student_id }}
+
+</div>
+
+<form method="POST">
+{% csrf_token %}
+
+{% if error %}
+<div class="alert alert-danger">
+    {{ error }}
+</div>
+{% endif %}
+
+    <div class="otp-container">
+
+        <input type="text" class="otp-box" maxlength="1">
+        <input type="text" class="otp-box" maxlength="1">
+        <input type="text" class="otp-box" maxlength="1">
+        <input type="text" class="otp-box" maxlength="1">
+        <input type="text" class="otp-box" maxlength="1">
+        <input type="text" class="otp-box" maxlength="1">
+        
+    </div>
+<input
+        type="hidden"
+        name="otp"
+        id="otp">
+<button class="btn btn-verify">
+
+Verify OTP
+
+</button>
+
+<div class="timer">
+
+Resend OTP in
+
+<span id="countdown">
+
+60
+
+</span>
+
+seconds
+
+</div>
+
+<div class="resend">
+
+<a href="{% url 'resend_otp' student.student_id %}">
+
+Resend OTP
+
+</a>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+<footer>
+
+<strong>ExamNest</strong><br>
+
+Your Exam. Your Effort. Your Achievement.<br>
+
+© 2026 All Rights Reserved
+
+</footer>
+
+
+<script>
+
+    const otpBoxes = document.querySelectorAll(".otp-box");
+    
+    otpBoxes.forEach((box, index) => {
+    
+        box.addEventListener("input", function () {
+    
+            this.value = this.value.replace(/[^0-9]/g, "");
+    
+            if (this.value.length === 1 && index < otpBoxes.length - 1) {
+                otpBoxes[index + 1].focus();
+            }
+    
+        });
+    
+        box.addEventListener("keydown", function (e) {
+    
+            if (e.key === "Backspace" && this.value === "" && index > 0) {
+                otpBoxes[index - 1].focus();
+            }
+    
+        });
+    
+    });
+
+
+
+
+    let seconds = 60;
+
+const countdown = document.getElementById("countdown");
+const resendLink = document.querySelector(".resend a");
+
+const timer = setInterval(function () {
+
+    seconds--;
+
+    countdown.innerText = seconds;
+
+    if (seconds <= 0) {
+
+        clearInterval(timer);
+
+        resendLink.style.pointerEvents = "auto";
+        resendLink.style.opacity = "1";
+
+        resendLink.innerText = "Resend OTP";
+
+        countdown.parentElement.innerHTML = "";
+
+    }
+
+}, 1000);
+
+
+const otpField = document.getElementById("otp");
+
+document.querySelector("form").addEventListener("submit", function () {
+
+    let otp = "";
+
+    otpBoxes.forEach(box => {
+        otp += box.value;
+    });
+
+    otpField.value = otp;
+
+});
+    
+    </script>
+
+</body>
+
+</html>

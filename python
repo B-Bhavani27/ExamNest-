@@ -1,0 +1,5 @@
+Callable default on unique field student.activation_token will not generate unique values upon migrating.
+Please choose how to proceed:
+ 1) Continue making this migration as the first step in writing a manual migration to generate unique values described here: https://docs.djangoproject.com/en/6.0/howto/writing-migrations/#migrations-that-add-unique-fields.
+ 2) Quit and edit field options in models.py.
+Select an option: Please select a valid option: 

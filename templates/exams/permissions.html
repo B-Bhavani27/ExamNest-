@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Camera &amp; Microphone Permission | ExamNest</title>
+<link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+<!-- Bootstrap 5 -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* ===================== DESIGN TOKENS (same as exam_instructions.html) ===================== */
+  :root{
+    --primary:#7C3AED;
+    --primary-dark:#5B21B6;
+    --primary-light:#EDE7FE;
+    --bg:#F5F7FB;
+    --white:#ffffff;
+    --grey:#8A8FA3;
+    --black:#1E1B2E;
+    --success:#12B76A;
+    --danger:#F04438;
+    --warning:#F79009;
+    --shadow-soft: 0 6px 20px rgba(31,26,74,0.06);
+    --shadow-hover: 0 14px 34px rgba(31,26,74,0.12);
+    --radius-lg:20px;
+    --radius-md:15px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Inter', sans-serif;
+    background:var(--bg);
+    color:var(--black);
+    overflow-x:hidden;
+  }
+  h1,h2,h3,h4,h5,.brand-font{font-family:'Sora', sans-serif;}
+  a{text-decoration:none;}
+
+  ::-webkit-scrollbar{width:9px;}
+  ::-webkit-scrollbar-thumb{background:var(--primary); border-radius:10px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+
+  .fade-up{opacity:0; transform:translateY(24px); transition:all .6s ease;}
+  .fade-up.in-view{opacity:1; transform:translateY(0);}
+
+  /* ===================== HEADER (no navbar) ===================== */
+  .instr-header{
+    position:sticky;
+    top:0;
+    z-index:1000;
+    background:var(--white);
+    padding:16px 0;
+    border-bottom:1px solid rgba(124,58,237,0.08);
+    transition:all .3s ease;
+  }
+  .instr-header.scrolled{box-shadow:var(--shadow-soft);}
+  .header-inner{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;}
+  .header-left{display:flex; align-items:center; gap:12px;}
+  .nav-logo-circle{
+    width:46px; height:46px;
+    border-radius:50%;
+    border:2px solid var(--primary);
+    padding:3px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--white);
+    overflow:hidden;
+    flex-shrink:0;
+  }
+  .nav-logo-circle img{width:100%; height:100%; object-fit:cover; border-radius:50%;}
+  .header-brand-text{font-weight:800; font-size:1.2rem; color:var(--primary-dark); line-height:1.1;}
+  .header-tagline{font-size:.72rem; color:var(--grey); font-weight:500;}
+  .instructions-pill{
+    display:flex; align-items:center; gap:12px;
+    padding:12px 22px;
+    border-radius:50px;
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    font-weight:700;
+    font-size:1rem;
+  }
+  .instructions-pill i{font-size:1.4rem;}
+
+  section, .instr-section{padding:26px 0;}
+  .section-heading{font-weight:800; font-size:1.35rem; margin-bottom:20px; display:flex; align-items:center; gap:12px;}
+  .section-heading .icon-badge{
+    width:40px; height:40px;
+    border-radius:12px;
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1rem;
+    flex-shrink:0;
+  }
+
+  /* ===================== CARD BASE ===================== */
+  .dash-card{
+    background:var(--white);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-soft);
+    border:none;
+    transition:all .35s ease;
+  }
+  .dash-card:hover{box-shadow:var(--shadow-hover);}
+
+  /* ===================== PROGRESS TRACKER ===================== */
+  .progress-tracker{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    padding:26px 30px;
+  }
+  .tracker-step{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    flex:1;
+    position:relative;
+  }
+  .tracker-step .step-circle{
+    width:48px; height:48px;
+    border-radius:50%;
+    background:var(--bg);
+    color:var(--grey);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.1rem;
+    margin-bottom:10px;
+    border:2px solid rgba(124,58,237,0.12);
+    transition:all .3s ease;
+  }
+  .tracker-step.done .step-circle{background:var(--success); color:var(--white); border-color:var(--success);}
+  .tracker-step.current .step-circle{
+    background:var(--primary);
+    color:var(--white);
+    border-color:var(--primary);
+    box-shadow:0 0 0 6px var(--primary-light);
+  }
+  .tracker-step .step-label{font-size:.8rem; font-weight:700; color:var(--grey);}
+  .tracker-step.done .step-label, .tracker-step.current .step-label{color:var(--black);}
+  .tracker-line{
+    position:absolute;
+    top:24px; left:50%;
+    width:100%; height:2px;
+    background:rgba(124,58,237,0.12);
+    z-index:0;
+  }
+  .tracker-step.done .tracker-line{background:var(--success);}
+  .tracker-step:last-child .tracker-line{display:none;}
+  .tracker-step .step-circle{position:relative; z-index:1;}
+
+  @media (max-width:767px){
+    .progress-tracker{padding:20px 12px; overflow-x:auto;}
+    .tracker-step{min-width:80px;}
+    .tracker-step .step-label{font-size:.68rem;}
+  }
+
+  /* ===================== HERO ===================== */
+  .permission-hero{text-align:center; padding:40px 0 10px;}
+  .permission-hero h1{font-weight:800; font-size:2rem; margin-bottom:12px;}
+  .permission-hero p{color:var(--grey); max-width:680px; margin:0 auto; font-size:.98rem;}
+
+  /* ===================== PERMISSION CARDS ===================== */
+  .perm-card{padding:30px; text-align:center; height:100%;}
+  .perm-icon{
+    width:74px; height:74px;
+    border-radius:50%;
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.9rem;
+    margin:0 auto 18px;
+    transition:all .4s ease;
+  }
+  .perm-card.granted .perm-icon{background:var(--success); color:var(--white);}
+  .perm-card h5{font-weight:800; margin-bottom:12px;}
+  .perm-card ul{list-style:none; padding:0; margin:0 0 20px; text-align:left;}
+  .perm-card ul li{
+    display:flex; align-items:flex-start; gap:10px;
+    padding:8px 0;
+    font-size:.87rem;
+    color:var(--grey);
+  }
+  .perm-card ul li i{color:var(--primary); margin-top:3px; flex-shrink:0;}
+  .perm-status-badge{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:7px 18px;
+    border-radius:50px;
+    font-weight:700;
+    font-size:.85rem;
+    margin-bottom:18px;
+    background:#FDEDEB;
+    color:var(--danger);
+    transition:all .3s ease;
+  }
+  .perm-status-badge.granted{background:#E7F8EF; color:var(--success);}
+  .perm-status-badge .dot{width:9px; height:9px; border-radius:50%; background:currentColor;}
+
+  .btn-permission{
+    background:var(--primary);
+    color:var(--white);
+    border:none;
+    padding:12px 30px;
+    border-radius:50px;
+    font-weight:700;
+    font-size:.9rem;
+    width:100%;
+    transition:all .3s ease;
+    box-shadow:0 6px 16px rgba(124,58,237,0.28);
+  }
+  .btn-permission:hover{background:var(--primary-dark); color:var(--white); transform:translateY(-2px);}
+  .btn-permission.granted-btn{
+    background:var(--success);
+    box-shadow:0 6px 16px rgba(18,183,106,0.28);
+    pointer-events:none;
+  }
+  .btn-permission.granted-btn:hover{background:var(--success); transform:none;}
+
+  /* ===================== CAMERA PREVIEW ===================== */
+  .preview-box{
+    width:100%;
+    max-width:560px;
+    aspect-ratio:16/10;
+    margin:0 auto;
+    border-radius:var(--radius-lg);
+    background:var(--black);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    position:relative;
+    box-shadow:var(--shadow-hover);
+  }
+  .preview-box video{width:100%; height:100%; object-fit:cover; display:none;}
+  .preview-placeholder{color:rgba(255,255,255,0.55); text-align:center; font-size:.9rem; font-weight:600;}
+  .preview-placeholder i{font-size:2.2rem; display:block; margin-bottom:10px; opacity:.6;}
+  .preview-live-badge{
+    position:absolute; top:14px; left:14px;
+    background:var(--danger);
+    color:var(--white);
+    padding:4px 12px;
+    border-radius:50px;
+    font-size:.72rem;
+    font-weight:800;
+    display:none;
+    align-items:center;
+    gap:6px;
+  }
+  .preview-live-badge .blink-dot{
+    width:7px; height:7px; border-radius:50%; background:var(--white);
+    animation:blink 1.2s infinite;
+  }
+  @keyframes blink{0%,100%{opacity:1;} 50%{opacity:.3;}}
+
+  /* ===================== SECURITY NOTICE ===================== */
+  .security-notice{
+    background:linear-gradient(135deg, #FFF7ED, #FEF3E7);
+    border:1.5px solid rgba(247,144,9,0.25);
+    border-radius:var(--radius-lg);
+    padding:28px 30px;
+  }
+  .security-notice h5{font-weight:800; color:#B45309; display:flex; align-items:center; gap:10px; margin-bottom:16px;}
+  .security-notice ul{list-style:none; padding:0; margin:0;}
+  .security-notice ul li{
+    display:flex; align-items:flex-start; gap:10px;
+    padding:8px 0;
+    font-size:.9rem;
+    color:#92400E;
+    font-weight:600;
+  }
+  .security-notice ul li i{color:var(--warning); margin-top:3px;}
+
+  /* ===================== PERMISSION STATUS CARD ===================== */
+  .status-card{padding:30px;}
+  .status-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 0;
+    border-bottom:1px dashed rgba(124,58,237,0.12);
+  }
+  .status-row:last-of-type{border-bottom:none;}
+  .status-row-label{display:flex; align-items:center; gap:12px; font-weight:700;}
+  .status-row-label .icon-circle{
+    width:38px; height:38px;
+    border-radius:10px;
+    background:var(--bg);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--primary);
+  }
+  .status-value{font-weight:800; font-size:.9rem; display:flex; align-items:center; gap:6px;}
+  .status-value.pending{color:var(--danger);}
+  .status-value.ok{color:var(--success);}
+  .overall-status-box{
+    margin-top:20px;
+    padding:16px 20px;
+    border-radius:var(--radius-md);
+    background:var(--bg);
+    text-align:center;
+    font-weight:800;
+    font-size:1rem;
+    transition:all .3s ease;
+  }
+  .overall-status-box.ready{background:#E7F8EF; color:var(--success);}
+
+  /* ===================== ACTION BUTTONS ===================== */
+  .btn-primary-solid{
+    background:var(--primary);
+    color:var(--white);
+    border:none;
+    padding:12px 30px;
+    border-radius:50px;
+    font-weight:700;
+    font-size:.92rem;
+    transition:all .3s ease;
+    box-shadow:0 6px 16px rgba(124,58,237,0.28);
+  }
+  .btn-primary-solid:hover:not(.disabled){background:var(--primary-dark); color:var(--white); transform:translateY(-2px);}
+  .btn-primary-solid.disabled{
+    opacity:.45;
+    box-shadow:none;
+    pointer-events:none;
+    cursor:not-allowed;
+  }
+  .btn-outline-soft{
+    border:1.5px solid rgba(124,58,237,0.25);
+    color:var(--primary-dark);
+    background:var(--white);
+    padding:12px 28px;
+    border-radius:50px;
+    font-weight:700;
+    font-size:.92rem;
+    transition:all .3s ease;
+  }
+  .btn-outline-soft:hover{background:var(--primary); color:var(--white); border-color:transparent;}
+
+  .confirm-card{padding:26px 30px;}
+
+  /* ===================== TOAST ALERT ===================== */
+  .permission-toast{
+    position:fixed;
+    bottom:24px; right:24px;
+    max-width:340px;
+    background:var(--white);
+    border-left:5px solid var(--danger);
+    border-radius:14px;
+    box-shadow:var(--shadow-hover);
+    padding:16px 18px;
+    display:flex; gap:12px; align-items:flex-start;
+    z-index:2000;
+    transform:translateY(120%);
+    opacity:0;
+    transition:all .4s ease;
+  }
+  .permission-toast.show{transform:translateY(0); opacity:1;}
+  .permission-toast i{color:var(--danger); font-size:1.2rem; margin-top:2px;}
+  .permission-toast .toast-title{font-weight:800; font-size:.88rem; margin-bottom:2px;}
+  .permission-toast .toast-msg{font-size:.8rem; color:var(--grey);}
+
+  /* ===================== FOOTER (exact same as exam_instructions.html) ===================== */
+  .site-footer{background:var(--black); color:rgba(255,255,255,0.75); padding:60px 0 0; margin-top:40px;}
+  .site-footer h6{color:var(--white); font-weight:700; margin-bottom:16px;}
+  .site-footer a{color:rgba(255,255,255,0.65); transition:.3s;}
+  .site-footer a:hover{color:var(--primary); padding-left:4px;}
+  .footer-links li{margin-bottom:9px;}
+  .social-icon{
+    width:38px; height:38px; border-radius:50%;
+    background:rgba(255,255,255,0.08);
+    display:inline-flex; align-items:center; justify-content:center;
+    margin-right:8px; transition:.3s; color:var(--white) !important;
+  }
+  .social-icon:hover{background:var(--primary); transform:translateY(-3px);}
+  .footer-bottom{border-top:1px solid rgba(255,255,255,0.08); margin-top:40px; padding:18px 0; text-align:center; font-size:.82rem;}
+
+  @media (max-width:767px){
+    .header-inner{justify-content:center; text-align:center;}
+    .instructions-pill{width:100%; justify-content:center;}
+    .section-heading{font-size:1.15rem;}
+    .confirm-card{padding:20px;}
+    .form-actions-row{flex-direction:column-reverse; gap:14px;}
+    .form-actions-row .btn{width:100%; text-align:center;}
+    .permission-hero h1{font-size:1.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== HEADER (no navbar) ===================== -->
+<header class="instr-header" id="instrHeader">
+  <div class="container">
+    <div class="header-inner">
+      <div class="header-left">
+        <div class="nav-logo-circle"><img src="{% static 'images/logo.png' %}" alt="ExamNest Logo"></div>
+        <div>
+          <div class="header-brand-text">ExamNest</div>
+          <div class="header-tagline">Your Exam. Your Effort. Your Achievement.</div>
+        </div>
+      </div>
+      <div class="instructions-pill">
+        <i class="fa-solid fa-video"></i> Camera &amp; Microphone Permission
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ===================== PROGRESS TRACKER ===================== -->
+  <div class="instr-section">
+    <div class="dash-card progress-tracker fade-up">
+      <div class="tracker-step done">
+        <div class="tracker-line"></div>
+        <div class="step-circle"><i class="fa-solid fa-check"></i></div>
+        <div class="step-label">Exam Instructions</div>
+      </div>
+      <div class="tracker-step current">
+        <div class="tracker-line"></div>
+        <div class="step-circle"><i class="fa-solid fa-video"></i></div>
+        <div class="step-label">Permissions</div>
+      </div>
+      <div class="tracker-step">
+        <div class="tracker-line"></div>
+        <div class="step-circle"><i class="fa-solid fa-face-smile"></i></div>
+        <div class="step-label">Face Verification</div>
+      </div>
+      <div class="tracker-step">
+        <div class="step-circle"><i class="fa-solid fa-pen-to-square"></i></div>
+        <div class="step-label">Start Exam</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== HERO ===================== -->
+  <div class="permission-hero fade-up">
+    <h1>Camera &amp; Microphone Permission</h1>
+    <p>Before starting the examination, ExamNest requires access to your device camera and microphone to ensure a secure, fair, and AI-proctored examination environment.</p>
+  </div>
+
+  <!-- ===================== PERMISSION CARDS ===================== -->
+  <div class="instr-section">
+    <div class="row g-4">
+      <div class="col-md-6 fade-up">
+        <div class="dash-card perm-card" id="cameraCard">
+          <div class="perm-icon"><i class="fa-solid fa-video"></i></div>
+          <h5>Camera Permission</h5>
+          <ul>
+            <li><i class="fa-solid fa-circle-check"></i> Camera access is required for face verification.</li>
+            <li><i class="fa-solid fa-circle-check"></i> AI continuously monitors the student's face during the examination.</li>
+            <li><i class="fa-solid fa-circle-check"></i> The camera must remain enabled throughout the exam.</li>
+          </ul>
+          <div>
+            <span class="perm-status-badge" id="cameraStatusBadge"><span class="dot"></span> Not Granted</span>
+          </div>
+          <button type="button" class="btn-permission" id="allowCameraBtn">
+            <i class="fa-solid fa-video me-2"></i>Allow Camera
+          </button>
+        </div>
+      </div>
+
+      <div class="col-md-6 fade-up">
+        <div class="dash-card perm-card" id="micCard">
+          <div class="perm-icon"><i class="fa-solid fa-microphone"></i></div>
+          <h5>Microphone Permission</h5>
+          <ul>
+            <li><i class="fa-solid fa-circle-check"></i> Microphone access is required for AI audio monitoring.</li>
+            <li><i class="fa-solid fa-circle-check"></i> The microphone must remain enabled throughout the examination.</li>
+            <li><i class="fa-solid fa-circle-check"></i> Audio monitoring helps maintain examination integrity.</li>
+          </ul>
+          <div>
+            <span class="perm-status-badge" id="micStatusBadge"><span class="dot"></span> Not Granted</span>
+          </div>
+          <button type="button" class="btn-permission" id="allowMicBtn">
+            <i class="fa-solid fa-microphone me-2"></i>Allow Microphone
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== LIVE CAMERA PREVIEW ===================== -->
+  <div class="instr-section">
+    <h5 class="section-heading fade-up"><span class="icon-badge"><i class="fa-solid fa-camera"></i></span>Camera Preview</h5>
+    <div class="dash-card p-4 fade-up text-center">
+      <div class="preview-box">
+        <span class="preview-live-badge" id="liveBadge"><span class="blink-dot"></span> LIVE</span>
+        <video id="cameraPreview" autoplay playsinline muted></video>
+        <div class="preview-placeholder" id="previewPlaceholder">
+          <i class="fa-solid fa-video-slash"></i>
+          No Camera Preview Available
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SECURITY NOTICE ===================== -->
+  <div class="instr-section">
+    <div class="security-notice fade-up">
+      <h5><i class="fa-solid fa-shield-halved"></i> ExamNest Security Policy</h5>
+      <ul>
+        <li><i class="fa-solid fa-triangle-exclamation"></i> Camera permission is mandatory.</li>
+        <li><i class="fa-solid fa-triangle-exclamation"></i> Microphone permission is mandatory.</li>
+        <li><i class="fa-solid fa-triangle-exclamation"></i> Face verification is the next step.</li>
+        <li><i class="fa-solid fa-triangle-exclamation"></i> AI monitoring starts after the exam begins.</li>
+        <li><i class="fa-solid fa-triangle-exclamation"></i> Revoking permissions during the exam may generate violations.</li>
+        <li><i class="fa-solid fa-triangle-exclamation"></i> Ensure adequate lighting before continuing.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===================== PERMISSION STATUS ===================== -->
+  <div class="instr-section">
+    <h5 class="section-heading fade-up"><span class="icon-badge"><i class="fa-solid fa-list-check"></i></span>Permission Status</h5>
+    <div class="dash-card status-card fade-up">
+      <div class="status-row">
+        <div class="status-row-label"><span class="icon-circle"><i class="fa-solid fa-video"></i></span> Camera</div>
+        <span class="status-value pending" id="cameraStatusValue"><i class="fa-solid fa-circle-xmark"></i> Not Granted</span>
+      </div>
+      <div class="status-row">
+        <div class="status-row-label"><span class="icon-circle"><i class="fa-solid fa-microphone"></i></span> Microphone</div>
+        <span class="status-value pending" id="micStatusValue"><i class="fa-solid fa-circle-xmark"></i> Not Granted</span>
+      </div>
+      <div class="overall-status-box" id="overallStatusBox">Waiting for Permissions</div>
+    </div>
+  </div>
+
+  <!-- ===================== ACTION BUTTONS ===================== -->
+  <div class="instr-section">
+    <div class="dash-card confirm-card fade-up">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 form-actions-row">
+        <a href="{% url 'exam_instructions' exam.id %}" class="btn btn-outline-soft">
+          <i class="fa-solid fa-arrow-left me-2"></i>Back
+        </a>
+        <a href="{% url 'face_verification' exam.id %}" class="btn btn-primary-solid disabled" id="continueBtn">
+          Continue <i class="fa-solid fa-arrow-right ms-2"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== TOAST ALERT ===================== -->
+<div class="permission-toast" id="permissionToast">
+  <i class="fa-solid fa-circle-exclamation"></i>
+  <div>
+    <div class="toast-title" id="toastTitle">Permission Denied</div>
+    <div class="toast-msg" id="toastMsg">Please allow access to continue.</div>
+  </div>
+</div>
+
+<!-- ===================== FOOTER (exact same as exam_instructions.html) ===================== -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="nav-logo-circle" style="border-color:#b9a6ff; width:52px; height:52px;">
+            <img src="{% static 'images/logo.png' %}" alt="ExamNest Logo">
+          </div>
+          <div class="fw-bold text-white fs-5">ExamNest</div>
+        </div>
+        <p class="small mb-3">Your Exam. Your Effort. Your Achievement.</p>
+        <div>
+          <a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="social-icon"><i class="fa-brands fa-whatsapp"></i></a>
+          <a href="#" class="social-icon"><i class="fa-brands fa-github"></i></a>
+          <a href="mailto:support@examnest.com" class="social-icon"><i class="fa-solid fa-envelope"></i></a>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <h6>Quick Links</h6>
+        <ul class="list-unstyled footer-links">
+          <li><a href="#">About</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Terms &amp; Conditions</a></li>
+        </ul>
+        <h6 class="mt-4">Legal</h6>
+        <ul class="list-unstyled footer-links">
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Refund Policy</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-4">
+        <h6>Contact Us</h6>
+        <ul class="list-unstyled footer-links">
+          <li><i class="fa-solid fa-location-dot me-2"></i> ExamNest HQ, India</li>
+          <li><i class="fa-solid fa-envelope me-2"></i> support@examnest.com</li>
+          <li><i class="fa-solid fa-phone me-2"></i> +91 XXXXX XXXXX</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ExamNest. All Rights Reserved.</div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  /* ---- Header shadow on scroll ---- */
+  const header = document.getElementById('instrHeader');
+  window.addEventListener('scroll', function () {
+    header.classList.toggle('scrolled', window.scrollY > 10);
+  });
+
+  /* ---- Fade-up scroll reveal ---- */
+  const faders = document.querySelectorAll('.fade-up');
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  faders.forEach(function (el) { observer.observe(el); });
+
+  /* ---- State ---- */
+  let cameraGranted = false;
+  let micGranted = false;
+  let cameraStream = null;
+  let micStream = null;
+  let cameraRequestInFlight = false;
+  let micRequestInFlight = false;
+
+  /* ---- Elements ---- */
+  const allowCameraBtn = document.getElementById('allowCameraBtn');
+  const allowMicBtn = document.getElementById('allowMicBtn');
+  const cameraCard = document.getElementById('cameraCard');
+  const micCard = document.getElementById('micCard');
+  const cameraStatusBadge = document.getElementById('cameraStatusBadge');
+  const micStatusBadge = document.getElementById('micStatusBadge');
+  const cameraStatusValue = document.getElementById('cameraStatusValue');
+  const micStatusValue = document.getElementById('micStatusValue');
+  const overallStatusBox = document.getElementById('overallStatusBox');
+  const continueBtn = document.getElementById('continueBtn');
+  const previewVideo = document.getElementById('cameraPreview');
+  const previewPlaceholder = document.getElementById('previewPlaceholder');
+  const liveBadge = document.getElementById('liveBadge');
+  const toast = document.getElementById('permissionToast');
+  const toastTitle = document.getElementById('toastTitle');
+  const toastMsg = document.getElementById('toastMsg');
+
+  /* ---- Toast helper ---- */
+  function showToast(title, msg) {
+    toastTitle.textContent = title;
+    toastMsg.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(function () { toast.classList.remove('show'); }, 4500);
+  }
+
+  /* ---- Update overall status + continue button ---- */
+  function refreshOverallStatus() {
+    if (cameraGranted && micGranted) {
+      overallStatusBox.textContent = '🟢 Ready for Face Verification';
+      overallStatusBox.classList.add('ready');
+      continueBtn.classList.remove('disabled');
+    } else {
+      overallStatusBox.textContent = 'Waiting for Permissions';
+      overallStatusBox.classList.remove('ready');
+      continueBtn.classList.add('disabled');
+    }
+  }
+
+  continueBtn.addEventListener('click', function (e) {
+    if (!(cameraGranted && micGranted)) { e.preventDefault(); }
+  });
+
+  /* ---- Camera permission ---- */
+  allowCameraBtn.addEventListener('click', function () {
+    if (cameraGranted || cameraRequestInFlight) return;
+    cameraRequestInFlight = true;
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(function (stream) {
+        cameraStream = stream;
+        cameraGranted = true;
+        cameraRequestInFlight = false;
+
+        previewVideo.srcObject = stream;
+        previewVideo.style.display = 'block';
+        previewPlaceholder.style.display = 'none';
+        liveBadge.style.display = 'flex';
+
+        cameraCard.classList.add('granted');
+        cameraStatusBadge.classList.add('granted');
+        cameraStatusBadge.innerHTML = '<span class="dot"></span> Granted';
+        cameraStatusValue.classList.remove('pending');
+        cameraStatusValue.classList.add('ok');
+        cameraStatusValue.innerHTML = '<i class="fa-solid fa-circle-check"></i> Granted';
+
+        allowCameraBtn.textContent = '';
+        allowCameraBtn.innerHTML = '<i class="fa-solid fa-circle-check me-2"></i>Camera Enabled';
+        allowCameraBtn.classList.add('granted-btn');
+
+        refreshOverallStatus();
+      })
+      .catch(function () {
+        cameraRequestInFlight = false;
+        showToast('Camera Access Denied', 'Please allow camera permission from your browser settings to continue.');
+      });
+  });
+
+  /* ---- Microphone permission ---- */
+  allowMicBtn.addEventListener('click', function () {
+    if (micGranted || micRequestInFlight) return;
+    micRequestInFlight = true;
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(function (stream) {
+        micStream = stream;
+        micGranted = true;
+        micRequestInFlight = false;
+
+        micCard.classList.add('granted');
+        micStatusBadge.classList.add('granted');
+        micStatusBadge.innerHTML = '<span class="dot"></span> Granted';
+        micStatusValue.classList.remove('pending');
+        micStatusValue.classList.add('ok');
+        micStatusValue.innerHTML = '<i class="fa-solid fa-circle-check"></i> Granted';
+
+        allowMicBtn.innerHTML = '<i class="fa-solid fa-circle-check me-2"></i>Microphone Enabled';
+        allowMicBtn.classList.add('granted-btn');
+
+        refreshOverallStatus();
+      })
+      .catch(function () {
+        micRequestInFlight = false;
+        showToast('Microphone Access Denied', 'Please allow microphone permission from your browser settings to continue.');
+      });
+  });
+
+  /* ---- Stop media streams if the user leaves this page ---- */
+  window.addEventListener('beforeunload', function () {
+    if (cameraStream) cameraStream.getTracks().forEach(function (t) { t.stop(); });
+    if (micStream) micStream.getTracks().forEach(function (t) { t.stop(); });
+  });
+
+});
+</script>
+</body>
+</html>

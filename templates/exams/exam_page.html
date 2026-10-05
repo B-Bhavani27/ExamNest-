@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ exam.exam_name }} | ExamNest</title>
+<link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+<!-- Bootstrap 5 -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* ===================== DESIGN TOKENS (same as exam_instructions.html / permissions.html / face_verification.html) ===================== */
+  :root{
+    --primary:#7C3AED;
+    --primary-dark:#5B21B6;
+    --primary-light:#EDE7FE;
+    --bg:#F5F7FB;
+    --white:#ffffff;
+    --grey:#8A8FA3;
+    --black:#1E1B2E;
+    --success:#12B76A;
+    --danger:#F04438;
+    --warning:#F79009;
+    --shadow-soft: 0 6px 20px rgba(31,26,74,0.06);
+    --shadow-hover: 0 14px 34px rgba(31,26,74,0.12);
+    --radius-lg:20px;
+    --radius-md:15px;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    font-family:'Inter', sans-serif;
+    background:var(--bg);
+    color:var(--black);
+    overflow-x:hidden;
+    user-select:none;
+  }
+  h1,h2,h3,h4,h5,.brand-font{font-family:'Sora', sans-serif;}
+  a{text-decoration:none;}
+
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--primary); border-radius:10px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+
+  .fade-up{opacity:0; transform:translateY(20px); transition:all .5s ease;}
+  .fade-up.in-view{opacity:1; transform:translateY(0);}
+
+  /* ===================== HEADER ===================== */
+  .instr-header{
+    position:sticky; top:0; z-index:1010;
+    background:var(--white);
+    padding:14px 0;
+    border-bottom:1px solid rgba(124,58,237,0.08);
+    transition:all .3s ease;
+  }
+  .instr-header.scrolled{box-shadow:var(--shadow-soft);}
+  .header-inner{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;}
+  .header-left{display:flex; align-items:center; gap:12px;}
+  .nav-logo-circle{
+    width:44px; height:44px; border-radius:50%;
+    border:2px solid var(--primary); padding:3px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--white); overflow:hidden; flex-shrink:0;
+  }
+  .nav-logo-circle img{width:100%; height:100%; object-fit:cover; border-radius:50%;}
+  .header-brand-text{font-weight:800; font-size:1.15rem; color:var(--primary-dark); line-height:1.1;}
+  .header-tagline{font-size:.7rem; color:var(--grey); font-weight:500;}
+
+  .header-right{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .header-info-chip{
+    display:flex; align-items:center; gap:10px;
+    background:var(--bg);
+    border-radius:14px;
+    padding:8px 16px;
+  }
+  .header-info-chip .chip-icon{
+    width:32px; height:32px; border-radius:9px;
+    background:var(--primary-light); color:var(--primary-dark);
+    display:flex; align-items:center; justify-content:center;
+    font-size:.85rem; flex-shrink:0;
+  }
+  .header-info-chip .chip-label{font-size:.68rem; color:var(--grey); font-weight:700; text-transform:uppercase; letter-spacing:.3px;}
+  .header-info-chip .chip-value{font-size:.85rem; font-weight:800; line-height:1.2;}
+
+  /* ===================== TOP BAR (duration / timer / AI status) ===================== */
+  .exam-topbar{
+    position:sticky; top:73px; z-index:1005;
+    background:var(--white);
+    border-bottom:1px solid rgba(124,58,237,0.08);
+    padding:12px 0;
+    box-shadow:var(--shadow-soft);
+  }
+  .topbar-inner{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;}
+  .duration-pill{
+    display:flex; align-items:center; gap:10px;
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    padding:8px 18px;
+    border-radius:50px;
+    font-weight:700;
+    font-size:.88rem;
+  }
+  .ai-status-pill{
+    display:flex; align-items:center; gap:10px;
+    background:#E7F8EF;
+    color:var(--success);
+    padding:8px 18px;
+    border-radius:50px;
+    font-weight:700;
+    font-size:.82rem;
+  }
+  .ai-status-pill .blink-dot{width:8px; height:8px; border-radius:50%; background:currentColor; animation:blink 1.2s infinite;}
+  @keyframes blink{0%,100%{opacity:1;} 50%{opacity:.25;}}
+  .proctor-counters{display:flex; align-items:center; gap:10px;}
+  .counter-chip{
+    display:flex; align-items:center; gap:6px;
+    padding:7px 14px;
+    border-radius:50px;
+    font-weight:800;
+    font-size:.8rem;
+  }
+  .counter-chip.warn-chip{background:#FEF3E7; color:var(--warning);}
+  .counter-chip.viol-chip{background:#FDEDEB; color:var(--danger);}
+  .timer-box{
+    display:flex; align-items:center; gap:12px;
+    background:var(--black);
+    color:var(--white);
+    padding:10px 22px;
+    border-radius:50px;
+    font-weight:800;
+    font-size:1.15rem;
+    letter-spacing:1px;
+    transition:all .3s ease;
+  }
+  .timer-box i{color:var(--warning);}
+  .timer-box.danger{background:var(--danger); animation:pulseTimer 1s infinite;}
+  @keyframes pulseTimer{0%,100%{box-shadow:0 0 0 0 rgba(240,68,56,0.5);} 50%{box-shadow:0 0 0 10px rgba(240,68,56,0);}}
+
+  /* ===================== MAIN LAYOUT ===================== */
+  .exam-main{padding:26px 0 40px;}
+
+  /* ---- Palette Sidebar ---- */
+  .palette-card{padding:22px; position:sticky; top:150px;}
+  .palette-card h6{font-weight:800; margin-bottom:16px; display:flex; align-items:center; gap:8px;}
+  .palette-grid{
+    display:grid;
+    grid-template-columns:repeat(5, 1fr);
+    gap:8px;
+    margin-bottom:20px;
+  }
+  .palette-btn{
+    width:100%; aspect-ratio:1;
+    border-radius:10px;
+    border:1.5px solid rgba(124,58,237,0.15);
+    background:var(--bg);
+    color:var(--grey);
+    font-weight:700;
+    font-size:.85rem;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    transition:all .25s ease;
+  }
+  .palette-btn:hover{border-color:var(--primary); color:var(--primary-dark); transform:translateY(-2px);}
+  .palette-btn.answered{background:var(--success); border-color:var(--success); color:var(--white);}
+  .palette-btn.current{
+    background:var(--primary); border-color:var(--primary); color:var(--white);
+    box-shadow:0 0 0 4px var(--primary-light);
+  }
+  .palette-legend{list-style:none; padding:0; margin:0; font-size:.78rem;}
+  .palette-legend li{display:flex; align-items:center; gap:10px; padding:6px 0; color:var(--grey); font-weight:600;}
+  .legend-dot{width:14px; height:14px; border-radius:4px; flex-shrink:0;}
+  .legend-dot.grey{background:var(--bg); border:1.5px solid rgba(124,58,237,0.2);}
+  .legend-dot.green{background:var(--success);}
+  .legend-dot.purple{background:var(--primary);}
+
+  .palette-stats{
+    background:var(--bg);
+    border-radius:var(--radius-md);
+    padding:14px 16px;
+    font-size:.8rem;
+    font-weight:700;
+    display:flex;
+    justify-content:space-between;
+    margin-top:16px;
+  }
+  .palette-stats span.count{color:var(--primary-dark);}
+
+  /* ---- Question Panel ---- */
+  .dash-card{
+    background:var(--white);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-soft);
+    border:none;
+  }
+  .question-panel{padding:34px;}
+  .question-header{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:22px;
+    padding-bottom:18px;
+    border-bottom:1.5px dashed rgba(124,58,237,0.15);
+  }
+  .question-number-badge{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    padding:7px 18px;
+    border-radius:50px;
+    font-weight:800;
+    font-size:.85rem;
+  }
+  .question-text{font-size:1.1rem; font-weight:700; margin-bottom:26px; line-height:1.6;}
+
+  .option-label{
+    display:flex; align-items:center; gap:14px;
+    padding:15px 18px;
+    border-radius:var(--radius-md);
+    border:1.5px solid rgba(124,58,237,0.15);
+    background:var(--bg);
+    margin-bottom:14px;
+    cursor:pointer;
+    transition:all .25s ease;
+    font-weight:600;
+    font-size:.94rem;
+  }
+  .option-label:hover{border-color:var(--primary); background:var(--primary-light);}
+  .option-label input[type="radio"]{
+    width:19px; height:19px;
+    accent-color:var(--primary);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .option-label input[type="radio"]:checked ~ .option-key{background:var(--primary); color:var(--white);}
+  .option-label.selected{border-color:var(--primary); background:var(--primary-light); box-shadow:var(--shadow-soft);}
+  .option-key{
+    width:30px; height:30px; border-radius:8px;
+    background:var(--white);
+    border:1.5px solid rgba(16, 11, 26, 0.2);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:.8rem;
+    flex-shrink:0;
+    transition:all .25s ease;
+  }
+  .option-label.selected .option-key{background:var(--primary); color:var(--white); border-color:var(--primary);}
+
+  .question-block{display:none;}
+  .question-block.active{display:block;}
+
+  /* ---- Bottom navigation buttons ---- */
+  .exam-nav-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:12px;
+    margin-top:26px;
+    padding-top:24px;
+    border-top:1px solid rgba(124,58,237,0.1);
+  }
+  .btn-nav-outline{
+    border:1.5px solid rgba(124,58,237,0.25);
+    color:var(--primary-dark);
+    background:var(--white);
+    padding:11px 24px;
+    border-radius:50px;
+    font-weight:700;
+    font-size:.88rem;
+    transition:all .3s ease;
+  }
+  .btn-nav-outline:hover{background:var(--primary); color:var(--white); border-color:transparent;}
+  .btn-nav-outline:disabled{opacity:.4; pointer-events:none;}
+  .btn-nav-solid{
+    background:var(--primary);
+    color:var(--white);
+    border:none;
+    padding:11px 26px;
+    border-radius:50px;
+    font-weight:700;
+    font-size:.88rem;
+    transition:all .3s ease;
+    box-shadow:0 6px 16px rgba(124,58,237,0.28);
+  }
+  .btn-nav-solid:hover{background:var(--primary-dark); color:var(--white); transform:translateY(-2px);}
+  .btn-nav-danger{
+    background:var(--white);
+    color:var(--danger);
+    border:1.5px solid rgba(240,68,56,0.3);
+    padding:11px 24px;
+    border-radius:50px;
+    font-weight:700;
+    font-size:.88rem;
+    transition:all .3s ease;
+  }
+  .btn-nav-danger:hover{background:var(--danger); color:var(--white); border-color:transparent;}
+  .btn-nav-submit{
+    background:var(--success);
+    color:var(--white);
+    border:none;
+    padding:11px 28px;
+    border-radius:50px;
+    font-weight:700;
+    font-size:.88rem;
+    transition:all .3s ease;
+    box-shadow:0 6px 16px rgba(18,183,106,0.28);
+  }
+  .btn-nav-submit:hover{background:#0E9C5B; color:var(--white); transform:translateY(-2px);}
+
+  /* ---- Submit modal ---- */
+  .modal-content{border-radius:var(--radius-lg); border:none;}
+  .modal-icon-warning{
+    width:66px; height:66px; border-radius:50%;
+    background:#FEF3E7; color:var(--warning);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.8rem; margin:0 auto 16px;
+  }
+
+  /* ===================== FOOTER (exact same as previous pages) ===================== */
+  .site-footer{background:var(--black); color:rgba(255,255,255,0.75); padding:60px 0 0; margin-top:40px;}
+  .site-footer h6{color:var(--white); font-weight:700; margin-bottom:16px;}
+  .site-footer a{color:rgba(255,255,255,0.65); transition:.3s;}
+  .site-footer a:hover{color:var(--primary); padding-left:4px;}
+  .footer-links li{margin-bottom:9px;}
+  .social-icon{
+    width:38px; height:38px; border-radius:50%;
+    background:rgba(255,255,255,0.08);
+    display:inline-flex; align-items:center; justify-content:center;
+    margin-right:8px; transition:.3s; color:var(--white) !important;
+  }
+  .social-icon:hover{background:var(--primary); transform:translateY(-3px);}
+  .footer-bottom{border-top:1px solid rgba(255,255,255,0.08); margin-top:40px; padding:18px 0; text-align:center; font-size:.82rem;}
+
+  @media (max-width:991px){
+    .palette-card{position:static; margin-bottom:22px;}
+  }
+  @media (max-width:767px){
+    .header-right{width:100%; justify-content:space-between;}
+    .header-info-chip{padding:6px 12px;}
+    .question-panel{padding:22px;}
+    .exam-nav-bar{flex-direction:column-reverse; align-items:stretch;}
+    .exam-nav-bar > div{display:flex; gap:10px; width:100%;}
+    .exam-nav-bar .btn-nav-outline, .exam-nav-bar .btn-nav-solid, .exam-nav-bar .btn-nav-danger, .exam-nav-bar .btn-nav-submit{flex:1; text-align:center;}
+    .palette-grid{grid-template-columns:repeat(6, 1fr);}
+    .proctor-counters{width:100%; justify-content:space-between;}
+  }
+
+  /* ================= PROCTORING NOTIFICATION ================= */
+  .proctor-notification{
+    position:fixed;
+    top:100px;
+    right:25px;
+    min-width:340px;
+    max-width:420px;
+    padding:16px 20px;
+    border-radius:18px;
+    display:flex;
+    align-items:center;
+    gap:15px;
+    color:#fff;
+    font-weight:600;
+    box-shadow:0 15px 35px rgba(0,0,0,.25);
+    z-index:99999;
+    transform:translateX(450px);
+    opacity:0;
+    transition:.45s ease;
+  }
+  .proctor-notification.show{
+    transform:translateX(0);
+    opacity:1;
+  }
+  .warning-card{ background:linear-gradient(135deg, #4F46E5, #2563EB); }
+  .violation-card{ background:linear-gradient(135deg, #EF4444, #B91C1C); }
+
+  .notification-icon{
+    width:50px;
+    height:50px;
+    border-radius:50%;
+    background:rgba(0,0,0,0.18);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+  }
+  .notification-icon i{
+    color: #fff !important;
+    font-size: 24px !important;
+    line-height: 1;
+    display: inline-block;
+  }
+  .notification-content{
+    font-size:15px;
+    line-height:1.5;
+  }
+  .d-none{ display:none !important; }
+
+  .proctor-hidden-video{
+    position:fixed;
+    top:-9999px;
+    left:-9999px;
+    width:320px;
+    height:240px;
+    opacity:0.01;
+    pointer-events:none;
+  }
+
+  /* ================= FULLSCREEN LOCK OVERLAY ================= */
+  .fullscreen-lock-overlay{
+    position:fixed; inset:0;
+    background:rgba(30,27,46,0.92);
+    z-index:99998;
+    display:none;
+    align-items:center; justify-content:center;
+    text-align:center;
+    color:var(--white);
+    padding:20px;
+  }
+  .fullscreen-lock-overlay.show{display:flex;}
+  .fullscreen-lock-box{max-width:420px;}
+  .fullscreen-lock-box i{font-size:2.6rem; color:var(--warning); margin-bottom:16px;}
+  .fullscreen-lock-box h5{font-weight:800; margin-bottom:10px;}
+  .fullscreen-lock-box p{color:rgba(255,255,255,0.7); font-size:.92rem; margin-bottom:20px;}
+</style>
+</head>
+<body oncontextmenu="return false;">
+
+<!-- ===================== HEADER ===================== -->
+<header class="instr-header" id="instrHeader">
+  <div class="container">
+    <div class="header-inner">
+      <div class="header-left">
+        <div class="nav-logo-circle"><img src="{% static 'images/logo.png' %}" alt="ExamNest Logo"></div>
+        <div>
+          <div class="header-brand-text">ExamNest</div>
+          <div class="header-tagline">Your Exam. Your Effort. Your Achievement.</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-info-chip">
+          <span class="chip-icon"><i class="fa-solid fa-user"></i></span>
+          <div>
+            <div class="chip-label">Student</div>
+            <div class="chip-value">{{ student.full_name }}</div>
+          </div>
+        </div>
+        <div class="header-info-chip">
+          <span class="chip-icon"><i class="fa-solid fa-id-badge"></i></span>
+          <div>
+            <div class="chip-label">Student ID</div>
+            <div class="chip-value">{{ student.student_id }}</div>
+          </div>
+        </div>
+        <div class="header-info-chip">
+          <span class="chip-icon"><i class="fa-solid fa-file-pen"></i></span>
+          <div>
+            <div class="chip-label">Exam</div>
+            <div class="chip-value">{{ exam.exam_name }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== TOP BAR: DURATION / TIMER / AI STATUS ===================== -->
+<div class="exam-topbar" id="examTopbar" data-duration-minutes="{{ exam.duration }}">
+  <div class="container">
+    <div class="topbar-inner">
+      <div class="duration-pill">
+        <i class="fa-solid fa-hourglass-half"></i> Duration: {{ exam.duration }} Minutes
+      </div>
+
+      <div class="ai-status-pill">
+        <span class="blink-dot"></span> AI Proctoring Active
+      </div>
+
+      <div class="proctor-counters">
+        <span class="counter-chip warn-chip"><i class="fa-solid fa-triangle-exclamation"></i> Warnings: <span id="warningCounter">{{ attempt.warnings|default:0 }}</span></span>
+        <span class="counter-chip viol-chip"><i class="fa-solid fa-ban"></i> Violations: <span id="violationCounter">{{ attempt.violations|default:0 }}</span>/5</span>
+      </div>
+
+      <div class="timer-box" id="timerBox">
+        <i class="fa-solid fa-clock"></i> <span id="timerDisplay">60:00</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PROCTORING NOTIFICATION ===================== -->
+<div id="proctorNotification" class="proctor-notification d-none">
+  <div class="notification-icon">
+      <i id="notificationIcon" class="fa-solid fa-bell"></i>
+  </div>
+  <div class="notification-content">
+      <div id="notificationMessage">Notification</div>
+  </div>
+</div>
+
+<!-- ===================== START GATE (user gesture required for fullscreen) ===================== -->
+<div class="fullscreen-lock-overlay show" id="startGateOverlay" style="z-index:100000;">
+  <div class="fullscreen-lock-box">
+    <i class="fa-solid fa-expand"></i>
+    <h5>Ready to Begin?</h5>
+    <p>Click below to enter full-screen mode and start your AI-proctored exam. The timer starts the moment you click Start.</p>
+    <button type="button" class="btn-nav-solid" id="startExamGateBtn">
+      <i class="fa-solid fa-play me-2"></i>Start Exam
+    </button>
+  </div>
+</div>
+
+<!-- ===================== FULLSCREEN LOCK OVERLAY ===================== -->
+<div class="fullscreen-lock-overlay" id="fullscreenLockOverlay">
+  <div class="fullscreen-lock-box">
+    <i class="fa-solid fa-expand"></i>
+    <h5>Full-Screen Mode Required</h5>
+    <p>The exam must be taken in full-screen mode. Exiting full-screen is logged as an AI proctoring violation. Click below to return to full-screen and continue.</p>
+    <button type="button" class="btn-nav-solid" id="reEnterFullscreenBtn">
+      <i class="fa-solid fa-expand me-2"></i>Return to Full-Screen
+    </button>
+  </div>
+</div>
+
+<!-- ===================== MAIN LAYOUT ===================== -->
+<div class="container exam-main">
+  <form method="POST" id="examForm" action="{% url 'submit_exam' exam.id %}">
+    <input type="hidden" id="attemptId" value="{{ attempt.id }}">
+    {% csrf_token %}
+
+    <div class="row g-4">
+
+      <!-- ===== LEFT: QUESTION PALETTE ===== -->
+      <div class="col-lg-3">
+        <div class="dash-card palette-card fade-up">
+          <h6><i class="fa-solid fa-table-cells" style="color:var(--primary);"></i> Question Palette</h6>
+          <div class="palette-grid" id="paletteGrid">
+            {% for question in questions %}
+            <button type="button" class="palette-btn" data-index="{{ forloop.counter0 }}">{{ forloop.counter }}</button>
+            {% endfor %}
+          </div>
+          <ul class="palette-legend">
+            <li><span class="legend-dot grey"></span> Not Answered</li>
+            <li><span class="legend-dot green"></span> Answered</li>
+            <li><span class="legend-dot purple"></span> Current Question</li>
+          </ul>
+          <div class="palette-stats">
+            <span>Answered: <span class="count" id="answeredCount">0</span> / <span id="totalCount">0</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CENTER: QUESTION PANEL ===== -->
+      <div class="col-lg-9">
+        <div class="dash-card question-panel fade-up">
+
+          {% for question in questions %}
+          <div class="question-block {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}" id="questionBlock{{ forloop.counter0 }}">
+            <div class="question-header">
+              <span class="question-number-badge"><i class="fa-solid fa-circle-question"></i> Question {{ forloop.counter }} of {{ questions|length }}</span>
+            </div>
+            <p class="question-text">{{ question.question }}</p>
+
+            <label class="option-label" data-question="{{ forloop.counter0 }}">
+              <input type="radio" name="question_{{ question.id }}" value="A" data-question-id="{{ question.id }}">
+              <span class="option-key">A</span>
+              <span>{{ question.option_a }}</span>
+            </label>
+            <label class="option-label" data-question="{{ forloop.counter0 }}">
+              <input type="radio" name="question_{{ question.id }}" value="B" data-question-id="{{ question.id }}">
+              <span class="option-key">B</span>
+              <span>{{ question.option_b }}</span>
+            </label>
+            <label class="option-label" data-question="{{ forloop.counter0 }}">
+              <input type="radio" name="question_{{ question.id }}" value="C" data-question-id="{{ question.id }}">
+              <span class="option-key">C</span>
+              <span>{{ question.option_c }}</span>
+            </label>
+            <label class="option-label" data-question="{{ forloop.counter0 }}">
+              <input type="radio" name="question_{{ question.id }}" value="D" data-question-id="{{ question.id }}">
+              <span class="option-key">D</span>
+              <span>{{ question.option_d }}</span>
+            </label>
+          </div>
+          {% empty %}
+          <div class="text-center text-secondary py-5">No questions found for this exam.</div>
+          {% endfor %}
+
+          <div class="exam-nav-bar">
+            <div>
+              <button type="button" class="btn-nav-outline" id="prevBtn"><i class="fa-solid fa-arrow-left me-1"></i> Previous</button>
+              <button type="button" class="btn-nav-solid" id="nextBtn">Next <i class="fa-solid fa-arrow-right ms-1"></i></button>
+            </div>
+            <div>
+              <button type="button" class="btn-nav-danger" id="clearBtn"><i class="fa-solid fa-eraser me-1"></i> Clear Response</button>
+              <button type="button" class="btn-nav-submit" data-bs-toggle="modal" data-bs-target="#submitModal"><i class="fa-solid fa-paper-plane me-1"></i> Submit Exam</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<!-- ===================== SUBMIT CONFIRMATION MODAL ===================== -->
+<div class="modal fade" id="submitModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-4 text-center">
+      <div class="modal-icon-warning"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <h5 class="fw-bold mb-2">Submit Exam?</h5>
+      <p class="text-secondary mb-1">Are you sure you want to submit the exam?</p>
+      <p class="text-secondary small mb-4">You have answered <strong id="modalAnsweredCount">0</strong> of <strong id="modalTotalCount">0</strong> questions. This action cannot be undone.</p>
+      <div class="d-flex justify-content-center gap-3">
+        <button type="button" class="btn-nav-outline" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn-nav-submit" id="confirmSubmitBtn">Submit <i class="fa-solid fa-check ms-1"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== AI PROCTORING CAMERA ===================== -->
+<video id="proctorVideo" class="proctor-hidden-video" autoplay playsinline muted></video>
+<canvas id="proctorCanvas" style="display:none;"></canvas>
+
+<!-- ===================== FOOTER (exact same as previous pages) ===================== -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="nav-logo-circle" style="border-color:#b9a6ff; width:52px; height:52px;">
+            <img src="{% static 'images/logo.png' %}" alt="ExamNest Logo">
+          </div>
+          <div class="fw-bold text-white fs-5">ExamNest</div>
+        </div>
+        <p class="small mb-3">Your Exam. Your Effort. Your Achievement.</p>
+        <div>
+          <a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="social-icon"><i class="fa-brands fa-whatsapp"></i></a>
+          <a href="#" class="social-icon"><i class="fa-brands fa-github"></i></a>
+          <a href="mailto:support@examnest.com" class="social-icon"><i class="fa-solid fa-envelope"></i></a>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <h6>Quick Links</h6>
+        <ul class="list-unstyled footer-links">
+          <li><a href="#">About</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Terms &amp; Conditions</a></li>
+        </ul>
+        <h6 class="mt-4">Legal</h6>
+        <ul class="list-unstyled footer-links">
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Refund Policy</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-4">
+        <h6>Contact Us</h6>
+        <ul class="list-unstyled footer-links">
+          <li><i class="fa-solid fa-location-dot me-2"></i> ExamNest HQ, India</li>
+          <li><i class="fa-solid fa-envelope me-2"></i> support@examnest.com</li>
+          <li><i class="fa-solid fa-phone me-2"></i> +91 XXXXX XXXXX</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ExamNest. All Rights Reserved.</div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+let examSubmitted = false;
+
+/* ================= NOTIFICATION HELPER ================= */
+let notificationTimer;
+function showNotification(message, type, icon){
+    const notification = document.getElementById("proctorNotification");
+    const notificationMessage = document.getElementById("notificationMessage");
+    const notificationIcon = document.getElementById("notificationIcon");
+
+    clearTimeout(notificationTimer);
+    notification.classList.remove("warning-card", "violation-card", "show", "d-none");
+    notification.classList.add(type === "warning" ? "warning-card" : "violation-card");
+    notificationIcon.className = icon;
+    notificationMessage.innerHTML = message;
+    notification.classList.add("show");
+
+    notificationTimer = setTimeout(function(){
+        notification.classList.remove("show");
+        setTimeout(function(){ notification.classList.add("d-none"); }, 450);
+    }, 4000);
+}
+
+/* ================= COOLDOWN (avoid flooding same event repeatedly) ================= */
+const eventCooldowns = {};
+const COOLDOWN_MS = 8000;
+
+function canFireEvent(eventName) {
+    const now = Date.now();
+    const last = eventCooldowns[eventName] || 0;
+    if (now - last < COOLDOWN_MS) return false;
+    eventCooldowns[eventName] = now;
+    return true;
+}
+
+/* ================= SEND EVENT TO BACKEND ================= */
+function sendProctorEvent(eventType, eventName, icon) {
+
+    const attemptId = document.getElementById("attemptId").value;
+
+    fetch("{% url 'update_proctoring' %}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            attempt_id: attemptId,
+            type: eventType,
+            event: eventName
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+
+        if (!data.success) return;
+
+        showNotification(eventName, eventType, icon);
+
+        document.getElementById("warningCounter").textContent = data.warnings;
+        document.getElementById("violationCounter").textContent = data.violations;
+
+        if (data.auto_submit) {
+
+            showNotification(
+                "Maximum violations reached. Auto submitting exam...",
+                "violation",
+                "fa-solid fa-ban"
+            );
+
+            examSubmitted = true;
+
+            setTimeout(function () {
+                window.location.href = "{% url 'result_page' exam.id %}";
+            }, 2000);
+        }
+    })
+    .catch(error => console.error(error));
+}
+
+function fireProctorEvent(type, eventName, icon) {
+    if (examSubmitted) return;
+    if (!canFireEvent(eventName)) return;
+    sendProctorEvent(type, eventName, icon);
+}
+
+/* ================= AI CAMERA ================= */
+const proctorVideo = document.getElementById("proctorVideo");
+let proctorStream = null;
+
+navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    .then(function(stream){
+        proctorStream = stream;
+        proctorVideo.srcObject = stream;
+        monitorAudio(stream);
+    })
+    .catch(function(error){
+        console.error(error);
+        fireProctorEvent("violation", "Camera or Microphone Disabled", "fa-solid fa-camera-slash");
+    });
+
+/* ================= CAMERA DISABLED DETECTION ================= */
+function monitorCamera() {
+    if (!proctorStream) return;
+    const videoTrack = proctorStream.getVideoTracks()[0];
+
+    if (!videoTrack || videoTrack.readyState !== "live") {
+        fireProctorEvent("violation", "Camera Disabled", "fa-solid fa-camera-slash");
+    }
+}
+setInterval(monitorCamera, 3000);
+
+/* ================= AUDIO LEVEL DETECTION (WARNING) ================= */
+function monitorAudio(stream) {
+    const audioTrack = stream.getAudioTracks()[0];
+    if (!audioTrack) return;
+
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const audioContext = new AudioCtx();
+        const source = audioContext.createMediaStreamSource(stream);
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 512;
+        source.connect(analyser);
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        setInterval(function () {
+            if (examSubmitted) return;
+            analyser.getByteFrequencyData(dataArray);
+            const avg = dataArray.reduce(function(a,b){ return a+b; }, 0) / dataArray.length;
+
+            if (avg > 40) {
+                fireProctorEvent("warning", "Audio Detected", "fa-solid fa-volume-high");
+            }
+        }, 4000);
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+/* ================= YOLO + FACE-COUNT FRAME ANALYSIS ================= */
+function captureFrameForAnalysis() {
+
+    if (!proctorStream || examSubmitted) return;
+
+    const video = document.getElementById('proctorVideo');
+    const canvas = document.getElementById('proctorCanvas');
+
+    if (!video.videoWidth) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const imageData = canvas.toDataURL('image/jpeg', 0.7);
+
+    const formData = new FormData();
+    formData.append('image', imageData);
+
+    fetch("{% url 'detect_objects' %}", {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if (!data.success || examSubmitted) return;
+
+        if (data.face_count === 0) {
+            fireProctorEvent('violation', 'Face Not Detected', 'fa-solid fa-user-slash');
+        } else if (data.face_count > 1) {
+            fireProctorEvent('violation', 'Multiple Faces Detected', 'fa-solid fa-users');
+        } else if (data.looking_away) {
+            fireProctorEvent('warning', 'Looking Away', 'fa-solid fa-eye');
+        }
+
+        (data.detected_objects || []).forEach(function (label) {
+            const icon = label.toLowerCase().includes('phone')
+                ? 'fa-solid fa-mobile-screen'
+                : 'fa-solid fa-book';
+            fireProctorEvent('violation', label, icon);
+        });
+    })
+    .catch(function (err) { console.error(err); });
+}
+setInterval(captureFrameForAnalysis, 6000);
+
+/* ================= FULLSCREEN ENFORCEMENT ================= */
+const fullscreenLockOverlay = document.getElementById('fullscreenLockOverlay');
+const reEnterFullscreenBtn = document.getElementById('reEnterFullscreenBtn');
+
+function requestFullscreenMode() {
+    const el = document.documentElement;
+    const request = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+    if (request) request.call(el).catch(function () {});
+}
+
+function isFullscreenActive() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+}
+
+document.addEventListener('fullscreenchange', handleFullscreenChange);
+document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
+function handleFullscreenChange() {
+    if (examSubmitted || !examStarted) return;
+
+    if (!isFullscreenActive()) {
+        fullscreenLockOverlay.classList.add('show');
+        fireProctorEvent('violation', 'Full-screen Exit', 'fa-solid fa-compress');
+    } else {
+        fullscreenLockOverlay.classList.remove('show');
+    }
+}
+
+reEnterFullscreenBtn.addEventListener('click', function () {
+    requestFullscreenMode();
+});
+
+/* ================= START GATE (user gesture -> fullscreen + timer) ================= */
+let examStarted = false;
+const startGateOverlay = document.getElementById('startGateOverlay');
+const startExamGateBtn = document.getElementById('startExamGateBtn');
+
+startExamGateBtn.addEventListener('click', function () {
+    requestFullscreenMode();
+    examStarted = true;
+    startGateOverlay.classList.remove('show');
+    startTimer();
+});
+
+/* ================= TAB SWITCH / WINDOW BLUR DETECTION ================= */
+document.addEventListener('visibilitychange', function () {
+    if (document.hidden && !examSubmitted) {
+        fireProctorEvent('violation', 'Browser Tab Switching Detected', 'fa-solid fa-window-restore');
+    }
+});
+
+/* ================= COPY / PASTE / CUT BLOCKING ================= */
+['copy', 'cut', 'paste'].forEach(function (evt) {
+    document.addEventListener(evt, function (e) {
+        e.preventDefault();
+        fireProctorEvent('violation', 'Copy / Paste Blocked', 'fa-solid fa-clipboard');
+    });
+});
+
+/* ================= RIGHT-CLICK BLOCKING ================= */
+document.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+    fireProctorEvent('violation', 'Right-Click Blocked', 'fa-solid fa-computer-mouse');
+});
+
+/* ================= DEVELOPER TOOLS DETECTION ================= */
+document.addEventListener('keydown', function (e) {
+    const blockedCombo =
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key)) ||
+        (e.ctrlKey && e.key.toLowerCase() === 'u');
+
+    if (blockedCombo) {
+        e.preventDefault();
+        fireProctorEvent('violation', 'Developer Tools Shortcut Blocked', 'fa-solid fa-code');
+    }
+});
+
+let devToolsOpen = false;
+setInterval(function () {
+    const threshold = 160;
+    const widthDiff = window.outerWidth - window.innerWidth;
+    const heightDiff = window.outerHeight - window.innerHeight;
+
+    if ((widthDiff > threshold || heightDiff > threshold)) {
+        if (!devToolsOpen) {
+            devToolsOpen = true;
+            fireProctorEvent('violation', 'Developer Tools Detected', 'fa-solid fa-code');
+        }
+    } else {
+        devToolsOpen = false;
+    }
+}, 2000);
+
+/* ---- Header shadow on scroll ---- */
+const header = document.getElementById('instrHeader');
+window.addEventListener('scroll', function () {
+    header.classList.toggle('scrolled', window.scrollY > 10);
+});
+
+/* ---- Fade-up reveal ---- */
+document.querySelectorAll('.fade-up').forEach(function (el, i) {
+    setTimeout(function () { el.classList.add('in-view'); }, 80 + i * 100);
+});
+
+/* ================= QUESTION NAVIGATION ================= */
+const questionBlocks = Array.from(document.querySelectorAll('.question-block'));
+const paletteButtons = Array.from(document.querySelectorAll('.palette-btn'));
+const totalQuestions = questionBlocks.length;
+let currentIndex = 0;
+
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const clearBtn = document.getElementById('clearBtn');
+const answeredCountEl = document.getElementById('answeredCount');
+const totalCountEl = document.getElementById('totalCount');
+const modalAnsweredCount = document.getElementById('modalAnsweredCount');
+const modalTotalCount = document.getElementById('modalTotalCount');
+
+totalCountEl.textContent = totalQuestions;
+modalTotalCount.textContent = totalQuestions;
+
+function showQuestion(index) {
+    if (index < 0 || index >= totalQuestions) return;
+    questionBlocks.forEach(function (block) { block.classList.remove('active'); });
+    paletteButtons.forEach(function (btn) { btn.classList.remove('current'); });
+
+    const targetBlock = questionBlocks[index];
+    if (targetBlock) targetBlock.classList.add('active');
+    if (paletteButtons[index]) paletteButtons[index].classList.add('current');
+
+    currentIndex = index;
+    prevBtn.disabled = currentIndex === 0;
+    nextBtn.innerHTML = (currentIndex === totalQuestions - 1)
+        ? 'Last Question <i class="fa-solid fa-flag-checkered ms-1"></i>'
+        : 'Next <i class="fa-solid fa-arrow-right ms-1"></i>';
+}
+
+prevBtn.addEventListener('click', function () { showQuestion(currentIndex - 1); });
+nextBtn.addEventListener('click', function () {
+    if (currentIndex < totalQuestions - 1) showQuestion(currentIndex + 1);
+});
+
+paletteButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        showQuestion(parseInt(this.dataset.index, 10));
+    });
+});
+
+/* ================= ANSWER TRACKING / PALETTE HIGHLIGHTING ================= */
+function refreshAnsweredCount() {
+    const answered = Array.from(document.querySelectorAll('input[type="radio"]:checked')).length;
+    answeredCountEl.textContent = answered;
+    modalAnsweredCount.textContent = answered;
+}
+
+document.querySelectorAll('input[type="radio"]').forEach(function (radio) {
+    radio.addEventListener('change', function () {
+        const qIndex = this.closest('.question-block').dataset.index;
+        const attemptId = document.getElementById("attemptId").value;
+        const questionId = this.dataset.questionId;
+        const answer = this.value;
+
+        const formData = new FormData();
+        formData.append("attempt_id", attemptId);
+        formData.append("question_id", questionId);
+        formData.append("answer", answer);
+
+        fetch("{% url 'save_answer' %}", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => console.log("Answer Saved", data));
+
+        this.closest('.question-block').querySelectorAll('.option-label').forEach(function (lbl) {
+            lbl.classList.remove('selected');
+        });
+        this.closest('.option-label').classList.add('selected');
+
+        const paletteBtn = paletteButtons[parseInt(qIndex, 10)];
+        if (paletteBtn) paletteBtn.classList.add('answered');
+
+        refreshAnsweredCount();
+    });
+});
+
+/* ================= CLEAR RESPONSE ================= */
+clearBtn.addEventListener('click', function () {
+    const activeBlock = questionBlocks[currentIndex];
+    if (!activeBlock) return;
+
+    activeBlock.querySelectorAll('input[type="radio"]').forEach(function (radio) {
+        radio.checked = false;
+    });
+    activeBlock.querySelectorAll('.option-label').forEach(function (lbl) {
+        lbl.classList.remove('selected');
+    });
+
+    const paletteBtn = paletteButtons[currentIndex];
+    if (paletteBtn) paletteBtn.classList.remove('answered');
+
+    refreshAnsweredCount();
+});
+
+/* Initialize first question view */
+showQuestion(0);
+refreshAnsweredCount();
+
+/* ================= TIMER ================= */
+const timerDisplay = document.getElementById('timerDisplay');
+const timerBox = document.getElementById('timerBox');
+const topbar = document.getElementById('examTopbar');
+
+const durationMinutes = parseInt(topbar.dataset.durationMinutes, 10);
+let totalSeconds = (!isNaN(durationMinutes) && durationMinutes > 0) ? durationMinutes * 60 : 60 * 60;
+
+function formatTime(seconds) {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return m + ':' + s;
+}
+
+timerDisplay.textContent = formatTime(totalSeconds);
+
+let timerInterval = null;
+
+function startTimer() {
+    timerInterval = setInterval(function () {
+        if (examSubmitted) { clearInterval(timerInterval); return; }
+        totalSeconds--;
+
+        if (totalSeconds <= 300) { timerBox.classList.add('danger'); }
+
+        if (totalSeconds <= 0) {
+            totalSeconds = 0;
+            timerDisplay.textContent = '00:00';
+            clearInterval(timerInterval);
+            autoSubmitExam();
+            return;
+        }
+        timerDisplay.textContent = formatTime(totalSeconds);
+    }, 1000);
+}
+
+/* ================= SUBMIT ================= */
+const confirmSubmitBtn = document.getElementById('confirmSubmitBtn');
+const submitModalEl = document.getElementById('submitModal');
+const submitModal = new bootstrap.Modal(submitModalEl);
+
+function finalizeSubmission() {
+    examSubmitted = true;
+    document.getElementById("examForm").submit();
+}
+
+confirmSubmitBtn.addEventListener('click', function () {
+    submitModal.hide();
+    finalizeSubmission();
+});
+
+function autoSubmitExam(){
+    if (examSubmitted) return;
+    finalizeSubmission();
+}
+
+/* Stop camera/mic streams once the form is actually submitted */
+window.addEventListener('beforeunload', function () {
+    if (proctorStream) proctorStream.getTracks().forEach(function (t) { t.stop(); });
+});
+
+});
+</script>
+</body>
+</html>

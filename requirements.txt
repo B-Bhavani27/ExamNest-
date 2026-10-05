@@ -1,0 +1,10 @@
+Django>=5.0,<6.0
+mysqlclient>=2.2
+deepface>=0.0.93
+opencv-python>=4.9
+tensorflow>=2.16
+ultralytics>=8.2
+numpy>=1.26
+Pillow>=10.0
+openpyxl>=3.1
+reportlab>=4.0

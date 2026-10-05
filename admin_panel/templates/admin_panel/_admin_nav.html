@@ -1,0 +1,36 @@
+<style>
+  .admin-navbar{
+    background:#1E1B2E;
+    padding:14px 0;
+  }
+  .admin-navbar .container{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+  }
+  .admin-navbar .brand{
+    color:#fff; font-weight:800; font-size:1.1rem; font-family:'Sora', sans-serif;
+    display:flex; align-items:center; gap:10px;
+  }
+  .admin-navbar .brand i{color:#7C3AED;}
+  .admin-navbar .nav-links{display:flex; gap:6px; flex-wrap:wrap;}
+  .admin-navbar .nav-links a{
+    color:rgba(255,255,255,0.7); text-decoration:none;
+    padding:9px 16px; border-radius:10px; font-size:.88rem; font-weight:600;
+    transition:all .2s ease;
+  }
+  .admin-navbar .nav-links a:hover, .admin-navbar .nav-links a.active{
+    background:rgba(124,58,237,0.25); color:#fff;
+  }
+  .admin-navbar .logout-link{color:#F04438 !important;}
+</style>
+
+<nav class="admin-navbar">
+  <div class="container">
+    <div class="brand"><i class="fa-solid fa-user-shield"></i> ExamNest Admin</div>
+    <div class="nav-links">
+      <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+      <a href="{% url 'admin_students' %}">Student Reports</a>
+      <a href="{% url 'admin_rankings' %}">Rankings</a>
+      <a href="{% url 'admin_logout' %}" class="logout-link">Logout</a>
+    </div>
+  </div>
+</nav>

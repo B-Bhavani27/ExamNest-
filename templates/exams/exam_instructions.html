@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Instructions | ExamNest</title>
+<link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+<!-- Bootstrap 5 -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* ===================== DESIGN TOKENS (same as student_dashboard.html) ===================== */
+  :root{
+    --primary:#7C3AED;
+    --primary-dark:#5B21B6;
+    --primary-light:#EDE7FE;
+    --bg:#F5F7FB;
+    --white:#ffffff;
+    --grey:#8A8FA3;
+    --black:#1E1B2E;
+    --success:#12B76A;
+    --danger:#F04438;
+    --warning:#F79009;
+    --shadow-soft: 0 6px 20px rgba(31,26,74,0.06);
+    --shadow-hover: 0 14px 34px rgba(31,26,74,0.12);
+    --radius-lg:20px;
+    --radius-md:15px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Inter', sans-serif;
+    background:var(--bg);
+    color:var(--black);
+    overflow-x:hidden;
+  }
+  h1,h2,h3,h4,h5,.brand-font{font-family:'Sora', sans-serif;}
+  a{text-decoration:none;}
+
+  ::-webkit-scrollbar{width:9px;}
+  ::-webkit-scrollbar-thumb{background:var(--primary); border-radius:10px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+
+  .fade-up{opacity:0; transform:translateY(24px); transition:all .6s ease;}
+  .fade-up.in-view{opacity:1; transform:translateY(0);}
+
+  /* ===================== HEADER (no navbar, per spec) ===================== */
+  .instr-header{
+    position:sticky;
+    top:0;
+    z-index:1000;
+    background:var(--white);
+    padding:16px 0;
+    border-bottom:1px solid rgba(124,58,237,0.08);
+    transition:all .3s ease;
+  }
+  .instr-header.scrolled{box-shadow:var(--shadow-soft);}
+  .header-inner{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;}
+  .header-left{display:flex; align-items:center; gap:12px;}
+  .nav-logo-circle{
+    width:46px; height:46px;
+    border-radius:50%;
+    border:2px solid var(--primary);
+    padding:3px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--white);
+    overflow:hidden;
+    flex-shrink:0;
+  }
+  .nav-logo-circle img{width:100%; height:100%; object-fit:cover; border-radius:50%;}
+  .header-brand-text{font-weight:800; font-size:1.2rem; color:var(--primary-dark); line-height:1.1;}
+  .header-tagline{font-size:.72rem; color:var(--grey); font-weight:500;}
+  .instructions-pill{
+    display:flex; align-items:center; gap:12px;
+    padding:12px 22px;
+    border-radius:50px;
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    font-weight:700;
+    font-size:1rem;
+  }
+  .instructions-pill i{font-size:1.4rem;}
+
+  section, .instr-section{padding:26px 0;}
+  .section-heading{font-weight:800; font-size:1.35rem; margin-bottom:20px; display:flex; align-items:center; gap:12px;}
+  .section-heading .icon-badge{
+    width:40px; height:40px;
+    border-radius:12px;
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1rem;
+    flex-shrink:0;
+  }
+
+  /* ===================== CARD BASE ===================== */
+  .dash-card{
+    background:var(--white);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-soft);
+    border:none;
+    transition:all .35s ease;
+  }
+  .dash-card:hover{box-shadow:var(--shadow-hover);}
+
+  /* ===================== SECTION 1: EXAM DETAILS ===================== */
+  .detail-tile{
+    display:flex; align-items:center; gap:14px;
+    padding:20px;
+    border-radius:var(--radius-md);
+    background:var(--bg);
+    height:100%;
+    transition:all .3s ease;
+  }
+  .detail-tile:hover{background:var(--primary-light); transform:translateY(-3px);}
+  .detail-tile .tile-icon{
+    width:46px; height:46px;
+    border-radius:12px;
+    background:var(--white);
+    color:var(--primary);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.1rem;
+    flex-shrink:0;
+    box-shadow:var(--shadow-soft);
+  }
+  .detail-tile .tile-label{font-size:.75rem; color:var(--grey); text-transform:uppercase; letter-spacing:.4px; font-weight:700;}
+  .detail-tile .tile-value{font-weight:800; font-size:1.1rem;}
+
+  /* ===================== SECTION 2: GENERAL RULES ===================== */
+  .rules-list{list-style:none; padding:0; margin:0;}
+  .rules-list li{
+    display:flex; align-items:flex-start; gap:12px;
+    padding:12px 0;
+    border-bottom:1px dashed rgba(124,58,237,0.12);
+    font-size:.92rem;
+  }
+  .rules-list li:last-child{border-bottom:none;}
+  .rules-list li i{color:var(--success); margin-top:3px; font-size:1rem;}
+
+  /* ===================== SECTION 3: AI PROCTORING ===================== */
+  .proctor-card{
+    padding:22px 18px;
+    text-align:center;
+    height:100%;
+  }
+  .proctor-icon{
+    width:54px; height:54px;
+    border-radius:14px;
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.3rem;
+    margin:0 auto 14px;
+    transition:all .3s ease;
+  }
+  .proctor-card:hover .proctor-icon{background:var(--primary); color:var(--white); transform:scale(1.08);}
+  .proctor-card h6{font-weight:700; font-size:.88rem; margin:0;}
+
+  /* ===================== SECTION 4: WARNING / VIOLATION POLICY ===================== */
+  .policy-card{padding:28px;}
+  .policy-card h5{font-weight:800; display:flex; align-items:center; gap:10px; margin-bottom:16px;}
+  .policy-card.warning-card{border-top:4px solid var(--warning);}
+  .policy-card.violation-card{border-top:4px solid var(--danger);}
+  .policy-list{list-style:none; padding:0; margin:0 0 16px;}
+  .policy-list li{
+    display:flex; align-items:center; gap:10px;
+    padding:8px 0;
+    font-size:.9rem;
+    font-weight:600;
+  }
+  .policy-list.warning-list li i{color:var(--warning);}
+  .policy-list.violation-list li i{color:var(--danger);}
+  .policy-note{
+    font-size:.85rem;
+    border-radius:12px;
+    padding:14px 16px;
+    font-weight:600;
+  }
+  .policy-note.warning-note{background:#FEF3E7; color:#B45309;}
+  .policy-note.violation-note{background:#FDEDEB; color:#B42318;}
+  .max-violation-badge{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--danger);
+    color:var(--white);
+    padding:8px 18px;
+    border-radius:50px;
+    font-weight:800;
+    font-size:.95rem;
+    margin-bottom:14px;
+  }
+
+  /* ===================== SECTION 5: ATTEMPT TIMELINE ===================== */
+  .timeline{position:relative; padding-left:40px;}
+  .timeline::before{
+    content:"";
+    position:absolute;
+    left:17px; top:6px; bottom:6px;
+    width:2px;
+    background:rgba(124,58,237,0.2);
+  }
+  .timeline-item{position:relative; margin-bottom:28px;}
+  .timeline-item:last-child{margin-bottom:0;}
+  .timeline-dot{
+    position:absolute; left:-40px; top:0;
+    width:36px; height:36px;
+    border-radius:50%;
+    background:var(--primary);
+    color:var(--white);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800;
+    font-size:.9rem;
+    box-shadow:0 0 0 5px var(--primary-light);
+  }
+  .timeline-body{
+    background:var(--bg);
+    border-radius:var(--radius-md);
+    padding:18px 22px;
+  }
+  .timeline-body h6{font-weight:800; margin-bottom:10px;}
+  .timeline-branch{display:flex; align-items:center; gap:10px; font-size:.88rem; margin-bottom:6px; font-weight:600;}
+  .timeline-branch:last-child{margin-bottom:0;}
+  .timeline-branch i.fa-check-circle{color:var(--success);}
+  .timeline-branch i.fa-xmark-circle{color:var(--danger);}
+  .timeline-branch .arrow{color:var(--grey);}
+
+  /* ===================== SECTION 6: RESULT AUTOMATION ===================== */
+  .auto-list{list-style:none; padding:0; margin:0;}
+  .auto-list li{
+    display:flex; align-items:center; gap:12px;
+    padding:12px 0;
+    border-bottom:1px dashed rgba(124,58,237,0.12);
+    font-size:.9rem;
+    font-weight:600;
+  }
+  .auto-list li:last-child{border-bottom:none;}
+  .auto-list li i{
+    width:34px; height:34px;
+    border-radius:10px;
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    display:flex; align-items:center; justify-content:center;
+    font-size:.85rem;
+    flex-shrink:0;
+  }
+
+  /* ===================== CONFIRMATION + ACTION BUTTONS ===================== */
+  .confirm-card{padding:26px 30px;}
+  .confirm-check-wrap{display:flex; align-items:flex-start; gap:14px;}
+  .confirm-check-wrap input[type="checkbox"]{
+    width:24px; height:24px;
+    margin-top:2px;
+    accent-color:var(--primary);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .confirm-check-wrap label{font-weight:600; font-size:.95rem; cursor:pointer;}
+
+  .btn-primary-solid{
+    background:var(--primary);
+    color:var(--white);
+    border:none;
+    padding:12px 30px;
+    border-radius:50px;
+    font-weight:700;
+    font-size:.92rem;
+    transition:all .3s ease;
+    box-shadow:0 6px 16px rgba(124,58,237,0.28);
+  }
+  .btn-primary-solid:hover:not(.disabled){background:var(--primary-dark); color:var(--white); transform:translateY(-2px);}
+  .btn-primary-solid.disabled{
+    opacity:.45;
+    box-shadow:none;
+    pointer-events:none;
+    cursor:not-allowed;
+  }
+  .btn-outline-soft{
+    border:1.5px solid rgba(124,58,237,0.25);
+    color:var(--primary-dark);
+    background:var(--white);
+    padding:12px 28px;
+    border-radius:50px;
+    font-weight:700;
+    font-size:.92rem;
+    transition:all .3s ease;
+  }
+  .btn-outline-soft:hover{background:var(--primary); color:var(--white); border-color:transparent;}
+
+  /* ===================== FOOTER (exact same as student_dashboard.html) ===================== */
+  .site-footer{background:var(--black); color:rgba(255,255,255,0.75); padding:60px 0 0; margin-top:40px;}
+  .site-footer h6{color:var(--white); font-weight:700; margin-bottom:16px;}
+  .site-footer a{color:rgba(255,255,255,0.65); transition:.3s;}
+  .site-footer a:hover{color:var(--primary); padding-left:4px;}
+  .footer-links li{margin-bottom:9px;}
+  .social-icon{
+    width:38px; height:38px; border-radius:50%;
+    background:rgba(255,255,255,0.08);
+    display:inline-flex; align-items:center; justify-content:center;
+    margin-right:8px; transition:.3s; color:var(--white) !important;
+  }
+  .social-icon:hover{background:var(--primary); transform:translateY(-3px);}
+  .footer-bottom{border-top:1px solid rgba(255,255,255,0.08); margin-top:40px; padding:18px 0; text-align:center; font-size:.82rem;}
+
+  @media (max-width:767px){
+    .header-inner{justify-content:center; text-align:center;}
+    .instructions-pill{width:100%; justify-content:center;}
+    .section-heading{font-size:1.15rem;}
+    .confirm-card{padding:20px;}
+    .form-actions-row{flex-direction:column-reverse; gap:14px;}
+    .form-actions-row .btn{width:100%; text-align:center;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== HEADER (no navbar) ===================== -->
+<header class="instr-header" id="instrHeader">
+  <div class="container">
+    <div class="header-inner">
+      <div class="header-left">
+        <div class="nav-logo-circle"><img src="{% static 'images/logo.png' %}" alt="ExamNest Logo"></div>
+        <div>
+          <div class="header-brand-text">ExamNest</div>
+          <div class="header-tagline">Your Exam. Your Effort. Your Achievement.</div>
+        </div>
+      </div>
+      <div class="instructions-pill">
+        <i class="fa-solid fa-book-open"></i> Exam Instructions
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ===================== SECTION 1: EXAM DETAILS ===================== -->
+  <div class="instr-section">
+    <h5 class="section-heading fade-up"><span class="icon-badge"><i class="fa-solid fa-clipboard-list"></i></span>Exam Details</h5>
+    <div class="dash-card p-4 fade-up">
+      <div class="row g-3">
+        <div class="col-6 col-md-4 col-lg-2">
+          <div class="detail-tile">
+            <div class="tile-icon"><i class="fa-solid fa-file-signature"></i></div>
+            <div>
+              <div class="tile-label">Exam Name</div>
+              <div class="tile-value" style="font-size:.95rem;">{{ exam.exam_name }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <div class="detail-tile">
+            <div class="tile-icon"><i class="fa-solid fa-clock"></i></div>
+            <div>
+              <div class="tile-label">Duration</div>
+              <div class="tile-value">{{ exam.duration }} Minutes</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <div class="detail-tile">
+            <div class="tile-icon"><i class="fa-solid fa-list-check"></i></div>
+            <div>
+              <div class="tile-label">Questions</div>
+              <div class="tile-value">{{ exam.total_questions }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <div class="detail-tile">
+            <div class="tile-icon"><i class="fa-solid fa-star"></i></div>
+            <div>
+              <div class="tile-label">Total Marks</div>
+              <div class="tile-value">{{ exam.total_marks }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <div class="detail-tile">
+            <div class="tile-icon"><i class="fa-solid fa-square-check"></i></div>
+            <div>
+              <div class="tile-label">Pass Marks</div>
+              <div class="tile-value">{{ exam.pass_marks }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+          <div class="detail-tile">
+            <div class="tile-icon"><i class="fa-solid fa-rotate"></i></div>
+            <div>
+              <div class="tile-label">Max Attempts</div>
+              <div class="tile-value">{{ exam.max_attempts }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SECTION 2: GENERAL RULES ===================== -->
+  <div class="instr-section">
+    <h5 class="section-heading fade-up"><span class="icon-badge"><i class="fa-solid fa-scale-balanced"></i></span>General Rules</h5>
+    <div class="dash-card p-4 fade-up">
+      <div class="row">
+        <div class="col-md-6">
+          <ul class="rules-list">
+            <li><i class="fa-solid fa-circle-check"></i> Camera permission is mandatory.</li>
+            <li><i class="fa-solid fa-circle-check"></i> Microphone permission is mandatory.</li>
+            <li><i class="fa-solid fa-circle-check"></i> Face verification is mandatory.</li>
+            <li><i class="fa-solid fa-circle-check"></i> Only one registered student can attend.</li>
+            <li><i class="fa-solid fa-circle-check"></i> One face must always remain visible.</li>
+            <li><i class="fa-solid fa-circle-check"></i> Stable internet connection is required.</li>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <ul class="rules-list">
+            <li><i class="fa-solid fa-circle-check"></i> Full-screen mode is mandatory.</li>
+            <li><i class="fa-solid fa-circle-check"></i> Browser refresh is prohibited.</li>
+            <li><i class="fa-solid fa-circle-check"></i> Browser tab switching is prohibited.</li>
+            <li><i class="fa-solid fa-circle-check"></i> Mobile phones are prohibited.</li>
+            <li><i class="fa-solid fa-circle-check"></i> Books or study materials are prohibited.</li>
+            <li><i class="fa-solid fa-circle-check"></i> Webcam and microphone must remain enabled.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SECTION 3: AI PROCTORING ===================== -->
+  <div class="instr-section">
+    <h5 class="section-heading fade-up"><span class="icon-badge"><i class="fa-solid fa-robot"></i></span>AI Proctoring</h5>
+    <div class="row g-3">
+      <div class="col-6 col-md-4 col-lg-3 fade-up">
+        <div class="dash-card proctor-card"><div class="proctor-icon"><i class="fa-solid fa-id-badge"></i></div><h6>Face Verification</h6></div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3 fade-up">
+        <div class="dash-card proctor-card"><div class="proctor-icon"><i class="fa-solid fa-user-slash"></i></div><h6>Face Not Detected</h6></div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3 fade-up">
+        <div class="dash-card proctor-card"><div class="proctor-icon"><i class="fa-solid fa-users"></i></div><h6>Multiple Faces</h6></div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3 fade-up">
+        <div class="dash-card proctor-card"><div class="proctor-icon"><i class="fa-solid fa-video-slash"></i></div><h6>Camera Disabled</h6></div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3 fade-up">
+        <div class="dash-card proctor-card"><div class="proctor-icon"><i class="fa-solid fa-microphone-slash"></i></div><h6>Microphone Disabled</h6></div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3 fade-up">
+        <div class="dash-card proctor-card"><div class="proctor-icon"><i class="fa-solid fa-window-restore"></i></div><h6>Browser Tab Switching</h6></div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3 fade-up">
+        <div class="dash-card proctor-card"><div class="proctor-icon"><i class="fa-solid fa-compress"></i></div><h6>Full-screen Exit</h6></div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3 fade-up">
+        <div class="dash-card proctor-card"><div class="proctor-icon"><i class="fa-solid fa-mobile-screen"></i></div><h6>Mobile Phone Detection</h6></div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3 fade-up">
+        <div class="dash-card proctor-card"><div class="proctor-icon"><i class="fa-solid fa-book"></i></div><h6>Book Detection</h6></div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3 fade-up">
+        <div class="dash-card proctor-card"><div class="proctor-icon"><i class="fa-solid fa-eye"></i></div><h6>Looking Away</h6></div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3 fade-up">
+        <div class="dash-card proctor-card"><div class="proctor-icon"><i class="fa-solid fa-volume-high"></i></div><h6>Audio Detection</h6></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SECTION 4: WARNING & VIOLATION POLICY ===================== -->
+  <div class="instr-section">
+    <h5 class="section-heading fade-up"><span class="icon-badge"><i class="fa-solid fa-triangle-exclamation"></i></span>Warning &amp; Violation Policy</h5>
+    <div class="row g-4">
+      <div class="col-md-6 fade-up">
+        <div class="dash-card policy-card warning-card h-100">
+          <h5><i class="fa-solid fa-circle-exclamation" style="color:var(--warning);"></i> Warning Only</h5>
+          <ul class="policy-list warning-list">
+            <li><i class="fa-solid fa-eye"></i> Looking Away</li>
+            <li><i class="fa-solid fa-volume-high"></i> Audio Detection</li>
+          </ul>
+          <div class="policy-note warning-note">
+            <i class="fa-solid fa-info-circle me-1"></i> These generate warnings only and do NOT terminate the exam.
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 fade-up">
+        <div class="dash-card policy-card violation-card h-100">
+          <h5><i class="fa-solid fa-ban" style="color:var(--danger);"></i> Violations</h5>
+          <ul class="policy-list violation-list">
+            <li><i class="fa-solid fa-user-slash"></i> Face Missing</li>
+            <li><i class="fa-solid fa-users"></i> Multiple Faces</li>
+            <li><i class="fa-solid fa-video-slash"></i> Camera Disabled</li>
+            <li><i class="fa-solid fa-microphone-slash"></i> Microphone Disabled</li>
+            <li><i class="fa-solid fa-window-restore"></i> Tab Switching</li>
+            <li><i class="fa-solid fa-compress"></i> Full-screen Exit</li>
+            <li><i class="fa-solid fa-mobile-screen"></i> Mobile Phone Detection</li>
+            <li><i class="fa-solid fa-book"></i> Book Detection</li>
+          </ul>
+          <div class="max-violation-badge"><i class="fa-solid fa-shield-halved"></i> Maximum Allowed Violations: 5</div>
+          <div class="policy-note violation-note">
+            <i class="fa-solid fa-circle-exclamation me-1"></i> If the total violations reach 5, the examination will be automatically terminated.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SECTION 5: ATTEMPT RULES (TIMELINE) ===================== -->
+  <div class="instr-section">
+    <h5 class="section-heading fade-up"><span class="icon-badge"><i class="fa-solid fa-timeline"></i></span>Attempt Rules</h5>
+    <div class="dash-card p-4 fade-up">
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot">1</div>
+          <div class="timeline-body">
+            <h6>Attempt 1</h6>
+            <div class="timeline-branch"><i class="fa-solid fa-check-circle"></i> Pass <span class="arrow"><i class="fa-solid fa-arrow-right mx-1"></i></span> Completed</div>
+            <div class="timeline-branch"><i class="fa-solid fa-xmark-circle"></i> Fail <span class="arrow"><i class="fa-solid fa-arrow-right mx-1"></i></span> Attempt 2</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot">2</div>
+          <div class="timeline-body">
+            <h6>Attempt 2</h6>
+            <div class="timeline-branch"><i class="fa-solid fa-check-circle"></i> Pass <span class="arrow"><i class="fa-solid fa-arrow-right mx-1"></i></span> Completed</div>
+            <div class="timeline-branch"><i class="fa-solid fa-xmark-circle"></i> Fail <span class="arrow"><i class="fa-solid fa-arrow-right mx-1"></i></span> Exam Unavailable</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SECTION 6: RESULT AUTOMATION ===================== -->
+  <div class="instr-section">
+    <h5 class="section-heading fade-up"><span class="icon-badge"><i class="fa-solid fa-gears"></i></span>Result</h5>
+    <div class="dash-card p-4 fade-up">
+      <p class="text-secondary small mb-3">After submission, the system automatically:</p>
+      <ul class="auto-list">
+        <li><i class="fa-solid fa-calculator"></i> Calculates score</li>
+        <li><i class="fa-solid fa-percent"></i> Calculates percentage</li>
+        <li><i class="fa-solid fa-square-check"></i> Generates Pass / Fail result</li>
+        <li><i class="fa-solid fa-triangle-exclamation"></i> Saves AI warnings</li>
+        <li><i class="fa-solid fa-shield-halved"></i> Saves AI violations</li>
+        <li><i class="fa-solid fa-clock-rotate-left"></i> Stores attempt history</li>
+        <li><i class="fa-solid fa-chart-line"></i> Updates dashboard statistics</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===================== CONFIRMATION ===================== -->
+  <div class="instr-section">
+    <div class="dash-card confirm-card fade-up">
+      <div class="confirm-check-wrap mb-4">
+        <input type="checkbox" id="agreeCheckbox">
+        <label for="agreeCheckbox">I have read and agree to all examination rules and AI monitoring policies.</label>
+      </div>
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 form-actions-row">
+        <a href="{% url 'student_dashboard' %}" class="btn btn-outline-soft">
+          <i class="fa-solid fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+        <a href="{% url 'permissions' exam.id %}" class="btn btn-primary-solid disabled" id="continueBtn">
+          Continue <i class="fa-solid fa-arrow-right ms-2"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== FOOTER (exact same as student_dashboard.html) ===================== -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="nav-logo-circle" style="border-color:#b9a6ff; width:52px; height:52px;">
+            <img src="{% static 'images/logo.png' %}" alt="ExamNest Logo">
+          </div>
+          <div class="fw-bold text-white fs-5">ExamNest</div>
+        </div>
+        <p class="small mb-3">Your Exam. Your Effort. Your Achievement.</p>
+        <div>
+          <a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="social-icon"><i class="fa-brands fa-whatsapp"></i></a>
+          <a href="#" class="social-icon"><i class="fa-brands fa-github"></i></a>
+          <a href="mailto:support@examnest.com" class="social-icon"><i class="fa-solid fa-envelope"></i></a>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <h6>Quick Links</h6>
+        <ul class="list-unstyled footer-links">
+          <li><a href="#">About</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Terms &amp; Conditions</a></li>
+        </ul>
+        <h6 class="mt-4">Legal</h6>
+        <ul class="list-unstyled footer-links">
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Refund Policy</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-4">
+        <h6>Contact Us</h6>
+        <ul class="list-unstyled footer-links">
+          <li><i class="fa-solid fa-location-dot me-2"></i> ExamNest HQ, India</li>
+          <li><i class="fa-solid fa-envelope me-2"></i> support@examnest.com</li>
+          <li><i class="fa-solid fa-phone me-2"></i> +91 XXXXX XXXXX</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ExamNest. All Rights Reserved.</div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  /* ---- Header shadow on scroll ---- */
+  const header = document.getElementById('instrHeader');
+  window.addEventListener('scroll', function () {
+    header.classList.toggle('scrolled', window.scrollY > 10);
+  });
+
+  /* ---- Fade-up scroll reveal ---- */
+  const faders = document.querySelectorAll('.fade-up');
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  faders.forEach(function (el) { observer.observe(el); });
+
+  /* ---- Confirmation checkbox controls Continue button ---- */
+  const agreeCheckbox = document.getElementById('agreeCheckbox');
+  const continueBtn = document.getElementById('continueBtn');
+
+  agreeCheckbox.addEventListener('change', function () {
+    continueBtn.classList.toggle('disabled', !this.checked);
+    continueBtn.setAttribute('aria-disabled', !this.checked);
+  });
+
+  /* Extra safety: block navigation if somehow triggered while still disabled */
+  continueBtn.addEventListener('click', function (e) {
+    if (!agreeCheckbox.checked) {
+      e.preventDefault();
+    }
+  });
+
+});
+</script>
+</body>
+</html>
